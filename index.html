@@ -2,67 +2,45 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP - Portal Corporativo Palmas</title>
+    <title>SVP 4.0 - Login Unidade Palmas</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 340px; }
-        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-size: 1.3em; line-height: 1.2; }
+        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-size: 1.3em; }
         input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-        button.btn-login { width: 100%; padding: 14px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; transition: 0.3s; margin-top: 10px; }
-        button.btn-login:hover { background: #1f6391; }
+        button { width: 100%; padding: 14px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #1f6391; }
         #error { color: #e74c3c; font-size: 0.85em; display: none; margin-top: 15px; font-weight: bold; }
-        .footer-info { margin-top: 25px; font-size: 0.7em; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
-
     <div class="login-box">
-        <div class="logo-text">PROJETO PESCAR SVP 4.0<br><small style="color: #7f8c8d; font-size: 0.7em;">Unidade Palmas / TO</small></div>
-        
+        <div class="logo-text">PROJETO PESCAR - SVP 4.0<br><small style="color: #7f8c8d; font-size: 0.7em;">Unidade Palmas / TO</small></div>
         <input type="text" id="user" placeholder="Usuário (ex: op_01)">
         <input type="password" id="pass" placeholder="Senha">
-        
-        <button class="btn-login" onclick="login()">AUTENTICAR NO SAP</button>
-        
-        <p id="error">❌ Credenciais inválidas ou sem acesso.</p>
-        
-        <div class="footer-info">
-            Responsável: Jorge Zensque [2026]<br>
-            Compliance: Unidade Kenerson
-        </div>
+        <button onclick="login()">AUTENTICAR NO SAP</button>
+        <p id="error">❌ Usuário ou senha incorretos.</p>
+        <div style="margin-top: 25px; font-size: 0.7em; color: #bdc3c7;">Responsável: Jorge Zensque [2026]</div>
     </div>
 
     <script>
-        // BASE DE DADOS CENTRALIZADA
         const users = {
-            'op_01': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-            'op_02': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-            'op_06': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
-            'lider_01': { p: 'lider789', n: 'LIDER', t: '1' },
-            'jorge_zensque': { p: 'master2026', n: 'CONSELHO', t: 'all' }
+            'op_01': { p: 'pescar123', t: '1' },
+            'op_02': { p: 'pescar123', t: '1' },
+            'jorge_zensque': { p: 'master2026', t: 'all' }
         };
 
         function login() {
             const u = document.getElementById('user').value.toLowerCase().trim();
             const p = document.getElementById('pass').value;
-            const errorMsg = document.getElementById('error');
-
             if(users[u] && users[u].p === p) {
-                // SALVAMENTO DE SESSÃO SEGURO
-                localStorage.setItem('svp_nivel', users[u].n);
                 localStorage.setItem('svp_user', u);
                 localStorage.setItem('svp_time', users[u].t);
-                
-                // REDIRECIONAMENTO DIRETO
                 window.location.href = 'operacao.html';
             } else {
-                errorMsg.style.display = 'block';
-                setTimeout(() => { errorMsg.style.display = 'none'; }, 3000);
+                document.getElementById('error').style.display = 'block';
             }
         }
-
-        // ATALHO ENTER
-        document.addEventListener('keypress', (e) => { if(e.key === 'Enter') login(); });
     </script>
 </body>
 </html>
