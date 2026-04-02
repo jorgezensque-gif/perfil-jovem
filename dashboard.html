@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>SVP - Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; background: #f4f7f6; }
+        .sidebar { width: 240px; background: #2c3e50; color: white; height: 100vh; padding: 20px; position: fixed; }
+        .main { margin-left: 260px; padding: 40px; width: 100%; }
+        .nav-btn { display: block; padding: 15px; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 10px; background: rgba(255,255,255,0.1); text-align: center; font-weight: bold;}
+        .nav-btn:hover { background: #2980b9; }
+        .hidden { display: none !important; }
+        .user-tag { background: #27ae60; padding: 5px 10px; border-radius: 4px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>SVP 4.0</h3>
+        <p>Cargo: <span class="user-tag" id="cargo-display"></span></p>
+        <hr>
+        <a href="operacao.html" class="nav-btn">📦 Operação Logística</a>
+        <a href="gestao.html" class="nav-btn" id="btn-gestao">📈 Gestão & ESG</a>
+        <a href="conselho.html" class="nav-btn" id="btn-conselho">⚖️ Conselho (Jorge)</a>
+        <a href="index.html" style="color: #ff7675; display: block; margin-top: 50px; text-decoration: none;">Sair</a>
+    </div>
+    <div class="main">
+        <h1>Painel de Controle Corporativo</h1>
+        <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h3>Bem-vindo, <span id="user-display"></span>!</h3>
+            <p>Seu acesso foi validado via Compliance.</p>
+        </div>
+    </div>
+    <script>
+        const nivel = localStorage.getItem('svp_nivel');
+        document.getElementById('cargo-display').innerText = nivel;
+        document.getElementById('user-display').innerText = localStorage.getItem('svp_user');
+        if (nivel === 'OPERACIONAL') {
+            document.getElementById('btn-gestao').classList.add('hidden');
+            document.getElementById('btn-conselho').classList.add('hidden');
+        } else if (nivel === 'CEO') {
+            document.getElementById('btn-conselho').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

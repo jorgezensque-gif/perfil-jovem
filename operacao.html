@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>SVP - Operação</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #ecf0f1; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .task { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html">⬅ Voltar</a>
+    <div class="card" style="border-top: 5px solid #e74c3c;">
+        <h2>📦 Logística: 2.000 Pedidos Ativos</h2>
+        <p>Acúmulo de Trabalho: <b id="count" style="font-size: 2em; color: red;">0</b></p>
+    </div>
+    <div class="card">
+        <h3>Fila de Processos (SAP-Simulado)</h3>
+        <div id="log"></div>
+    </div>
+    <script>
+        let pedidos = 0;
+        const acoes = ["Conferência Cega NF-99", "Inventário Rua B", "Picking Óculos Aero", "Auditoria Compliance", "Cotação Frete Palmas"];
+        setInterval(() => {
+            pedidos += Math.floor(Math.random() * 5);
+            document.getElementById('count').innerText = pedidos;
+            const div = document.createElement('div');
+            div.className = "task";
+            div.innerHTML = `<span>${acoes[Math.floor(Math.random()*5)]}</span> <button>Resolver</button>`;
+            const log = document.getElementById('log');
+            log.prepend(div);
+            if(log.children.length > 8) log.lastChild.remove();
+        }, 2000);
+    </script>
+</body>
+</html>
