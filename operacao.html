@@ -2,36 +2,32 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP - Simulador de Operação | CD Palmas</title>
+    <title>SVP - Gestão de Fluxo de Estoque</title>
     <style>
         :root { --blue: #2980b9; --dark: #2c3e50; --green: #27ae60; --red: #e74c3c; --gold: #f1c40f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* PAINEL ESQUERDO: FILA SAP */
+        /* PAINEL DE TAREFAS */
         .painel-tarefas { flex: 1; padding: 20px; overflow-y: auto; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 5px solid var(--blue); }
-        .task { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 8px; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        
-        .badge { background: var(--red); color: white; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; margin-right: 10px; }
-        .btn-resolver { background: var(--blue); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .task { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 8px; }
 
-        /* PAINEL DIREITO: MAPA DO PRÉDIO (ESTILO GAME) */
-        .painel-mapa { width: 380px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-left: 6px solid #34495e; }
-        .predio-container { display: flex; flex-direction: column-reverse; gap: 12px; margin-top: 30px; position: relative; }
-        .andar-box { height: 65px; border: 2px solid #3498db; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; transition: 0.4s; background: rgba(52, 152, 219, 0.1); font-weight: bold; }
-        .andar-num { position: absolute; left: -10px; background: #3498db; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-        
-        /* EFEITO QUANDO O ANDAR ESTÁ ATIVO */
-        .andar-ativo { background: var(--green) !important; border-color: white !important; box-shadow: 0 0 15px var(--green); transform: scale(1.03); z-index: 5; }
-        .andar-ativo::after { content: "📍 MISSÃO"; position: absolute; right: 10px; font-size: 9px; background: white; color: var(--green); padding: 2px 5px; border-radius: 3px; animation: blink 0.8s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        /* PAINEL DE INFORMAÇÕES DE ESTOQUE (DIREITA) */
+        .painel-estoque { width: 420px; background: var(--dark); color: white; padding: 20px; border-left: 6px solid #34495e; overflow-y: auto; }
+        .tabela-fluxo { width: 100%; border-collapse: collapse; font-size: 0.75em; margin-top: 10px; background: rgba(0,0,0,0.2); }
+        .tabela-fluxo th, .tabela-fluxo td { padding: 8px; border: 1px solid #444; text-align: center; }
+        .tabela-fluxo th { background: #34495e; color: var(--gold); }
+        .saldo-destaque { color: var(--green); font-weight: bold; font-size: 1.1em; }
 
-        /* MODAL DE CONFERÊNCIA BLINDADA */
-        #modal-tarefa { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 380px; text-align: center; color: #333; border-top: 10px solid var(--green); }
-        input { width: 85%; padding: 15px; margin: 20px 0; font-size: 1.8em; text-align: center; border: 3px solid #ddd; border-radius: 12px; outline: none; }
-        input:focus { border-color: var(--blue); }
+        /* PRÉDIO VISUAL */
+        .predio { display: flex; flex-direction: column-reverse; gap: 8px; margin: 20px 0; }
+        .andar { height: 45px; border: 1px solid #555; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; transition: 0.3s; }
+        .ativo { background: var(--green) !important; box-shadow: 0 0 15px var(--green); border-color: white; }
+
+        /* MODAL */
+        #modal-tarefa { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 380px; text-align: center; color: #333; border-top: 10px solid var(--green); }
+        input { width: 80%; padding: 15px; margin: 20px 0; font-size: 2em; text-align: center; border: 3px solid #ddd; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -39,139 +35,137 @@
     <div class="painel-tarefas">
         <div class="card" style="border-top-color: var(--red);">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h3 style="margin:0; color: var(--dark);">Terminal de Operações SVP</h3>
-                    <p style="margin:0; font-size: 0.8em; color: #666;">Responsável: Jorge Zensque</p>
-                </div>
+                <h2>📦 Terminal SAP: Movimentação</h2>
                 <div style="text-align: right;">
-                    <small style="font-weight: bold; color: var(--red);">ACÚMULO SAP</small><br>
-                    <b id="count" style="font-size: 3em; color: var(--red);">0</b>
+                    <small>FILA DE ESPERA</small><br>
+                    <b id="count" style="font-size: 2.5em; color: var(--red);">0</b>
                 </div>
             </div>
         </div>
-
-        <div id="log">
-            </div>
+        <div id="log"></div>
     </div>
 
-    <div class="painel-mapa">
-        <h2 style="text-align: center; color: #3498db; margin-bottom: 5px;">ESTRUTURA CD</h2>
-        <p style="text-align: center; font-size: 0.75em; color: #bdc3c7; margin-bottom: 20px;">Clique em RESOLVER para localizar o item</p>
+    <div class="painel-estoque">
+        <h3 style="text-align: center; color: var(--gold); margin-bottom: 5px;">📊 STATUS DE ESTOQUE (CD PALMAS)</h3>
         
-        <div class="predio-container">
-            <div class="andar-box" id="andar-4"><span class="andar-num">4</span>👕 VESTUÁRIO / ROUPAS</div>
-            <div class="andar-box" id="andar-3"><span class="andar-num">3</span>🍳 COZINHA / LAR</div>
-            <div class="andar-box" id="andar-2"><span class="andar-num">2</span>🎧 ELETRÔNICOS</div>
-            <div class="andar-box" id="andar-1"><span class="andar-num">1</span>📝 PAPELARIA</div>
-            <div class="andar-box" style="background: #34495e; border-color: #555;"><span class="andar-num">T</span>📦 EXPEDIÇÃO / DOCAS</div>
+        <div class="predio">
+            <div class="andar" id="a-4">4º ANDAR: VESTUÁRIO</div>
+            <div class="andar" id="a-3">3º ANDAR: COZINHA</div>
+            <div class="andar" id="a-2">2º ANDAR: ELETRÔNICOS</div>
+            <div class="andar" id="a-1">1º ANDAR: PAPELARIA</div>
         </div>
 
-        <div style="margin-top: auto; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border-left: 4px solid var(--gold);">
-            <h4 style="margin: 0 0 10px 0; color: var(--gold);">SISTEMA DE COMPLIANCE</h4>
-            <p style="font-size: 0.8em; line-height: 1.4;">Divergências na contagem geram <b>penalidade de +5 tarefas</b> no sistema e travam a auditoria.</p>
+        <table class="tabela-fluxo">
+            <thead>
+                <tr>
+                    <th>PRODUTO</th>
+                    <th>INICIAL</th>
+                    <th>ENTRADA</th>
+                    <th>SAÍDA</th>
+                    <th>SALDO</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-tabela">
+                </tbody>
+        </table>
+
+        <div style="margin-top: 20px; padding: 10px; border: 1px dashed var(--gold); font-size: 0.8em;">
+            <b>💡 DICA DO EDUCADOR (JORGE):</b><br>
+            O <i>Saldo</i> é o que o jovem deve inserir no sistema ao conferir a prateleira. Se houver divergência entre o saldo da tabela e a conferência, o SAP travará.
         </div>
-        <button onclick="window.location.href='dashboard.html'" style="margin-top: 15px; padding: 12px; background: #555; border: none; color: white; cursor: pointer; border-radius: 8px;">Voltar ao Dashboard</button>
+        <button onclick="location.href='dashboard.html'" style="margin-top: 20px; width: 100%; padding: 10px; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer;">Sair</button>
     </div>
 
     <div id="modal-tarefa">
         <div class="modal-content">
-            <h2 id="modal-titulo" style="margin-bottom:5px;">Conferência</h2>
-            <p id="modal-setor" style="font-weight: bold; color: var(--blue); margin-top:0;"></p>
-            <p style="font-size: 0.9em; color: #666;">Informe a quantidade exata encontrada na prateleira para baixar o pedido:</p>
-            <input type="number" id="input-qtd" placeholder="0">
-            <button onclick="validarSap()" style="width: 100%; padding: 18px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1.1em; cursor: pointer;">CONFIRMAR NO SAP</button>
-            <button onclick="fecharModal()" style="margin-top: 15px; background: none; border: none; color: #999; cursor: pointer;">Cancelar</button>
+            <h2 id="m-titulo">Conferência</h2>
+            <p id="m-desc">Valide o saldo atual no SAP.</p>
+            <input type="number" id="input-qtd" placeholder="000">
+            <button onclick="validar()" style="width: 100%; padding: 15px; background: var(--green); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">VALIDAR NO SAP</button>
         </div>
     </div>
 
     <script>
-        let pedidos = 0;
+        let acúmulo = 0;
         let setorAtivo = "";
         let andarAtivo = 0;
 
-        // GABARITO OFICIAL BLINDADO
-        const gabarito = {
-            "Roupas": 150,
-            "Cozinha": 85,
-            "Eletrônicos": 50,
-            "Papelaria": 200
+        // BANCO DE DADOS DINÂMICO
+        const estoque = {
+            "Roupas": { inicial: 100, entrada: 60, saida: 10, andar: 4 },
+            "Cozinha": { inicial: 50, entrada: 45, saida: 10, andar: 3 },
+            "Eletrônicos": { inicial: 30, entrada: 40, saida: 20, andar: 2 },
+            "Papelaria": { inicial: 150, entrada: 80, saida: 30, andar: 1 }
         };
 
-        const tarefasDisponiveis = [
-            { nome: "Inventário de Roupas", setor: "Roupas", andar: 4 },
-            { nome: "Conferência de Cozinha", setor: "Cozinha", andar: 3 },
-            { nome: "Picking de Eletrônicos", setor: "Eletrônicos", andar: 2 },
-            { nome: "Auditoria de Papelaria", setor: "Papelaria", andar: 1 }
-        ];
+        function atualizarTabela() {
+            let html = "";
+            for (let item in estoque) {
+                let e = estoque[item];
+                let saldo = e.inicial + e.entrada - e.saida;
+                html += `<tr>
+                    <td>${item}</td>
+                    <td>${e.inicial}</td>
+                    <td style="color:var(--green)">+${e.entrada}</td>
+                    <td style="color:var(--red)">-${e.saida}</td>
+                    <td class="saldo-destaque">${saldo}</td>
+                </tr>`;
+            }
+            document.getElementById('corpo-tabela').innerHTML = html;
+        }
 
-        // MOTOR DO SISTEMA
         setInterval(() => {
-            pedidos += Math.floor(Math.random() * 3) + 1;
-            document.getElementById('count').innerText = pedidos;
+            acúmulo++;
+            document.getElementById('count').innerText = acúmulo;
             
-            const task = tarefasDisponiveis[Math.floor(Math.random() * 4)];
-            const div = document.createElement('div');
-            div.className = "task";
-            div.innerHTML = `
-                <span><span class="badge">SAP</span> ${task.nome}</span>
-                <button class="btn-resolver" onclick="localizarNoMapa(${task.andar}, '${task.setor}', '${task.nome}')">RESOLVER</button>
-            `;
+            // Simula mudança no fluxo de estoque (Entradas e Saídas mudam sozinhas)
+            const chaves = Object.keys(estoque);
+            const aleatorio = chaves[Math.floor(Math.random() * chaves.length)];
+            estoque[aleatorio].entrada += Math.floor(Math.random() * 2);
+            estoque[aleatorio].saida += Math.floor(Math.random() * 2);
+            atualizarTabela();
+
+            const card = document.createElement('div');
+            card.className = "task";
+            card.innerHTML = `<span><b>[SAP]</b> Auditoria: ${aleatorio}</span> 
+                             <button onclick="focar('${aleatorio}')" style="background:var(--blue); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Conferir</button>`;
             
             const log = document.getElementById('log');
-            log.prepend(div);
+            log.prepend(card);
             if(log.children.length > 7) log.lastChild.remove();
-        }, 4000);
+        }, 5000);
 
-        function localizarNoMapa(andar, setor, nome) {
-            // Limpa andares ativos
-            document.querySelectorAll('.andar-box').forEach(el => el.classList.remove('andar-ativo'));
+        function focar(item) {
+            setorAtivo = item;
+            andarAtivo = estoque[item].andar;
+            document.querySelectorAll('.andar').forEach(a => a.classList.remove('ativo'));
+            document.getElementById('a-' + andarAtivo).classList.add('ativo');
             
-            // Ativa o andar no mapa (Visual Game)
-            const box = document.getElementById('andar-' + andar);
-            box.classList.add('andar-ativo');
-            
-            setorAtivo = setor;
-            andarAtivo = andar;
-
-            // Simula o tempo de "deslocamento" do jovem até o andar
             setTimeout(() => {
-                abrirModal(nome, setor);
-            }, 600);
+                document.getElementById('modal-tarefa').style.display = 'flex';
+                document.getElementById('m-titulo').innerText = "Setor: " + item;
+                document.getElementById('input-qtd').value = "";
+                document.getElementById('input-qtd').focus();
+            }, 500);
         }
 
-        function abrirModal(nome, setor) {
-            document.getElementById('modal-tarefa').style.display = 'flex';
-            document.getElementById('modal-titulo').innerText = nome;
-            document.getElementById('modal-setor').innerText = "📍 LOCAL: " + setor.toUpperCase();
-            document.getElementById('input-qtd').value = "";
-            document.getElementById('input-qtd').focus();
-        }
-
-        function fecharModal() {
-            document.getElementById('modal-tarefa').style.display = 'none';
-            document.querySelectorAll('.andar-box').forEach(el => el.classList.remove('andar-ativo'));
-        }
-
-        function validarSap() {
+        function validar() {
             const informado = parseInt(document.getElementById('input-qtd').value);
-            const correto = gabarito[setorAtivo];
-
-            if(isNaN(informado)) {
-                alert("⚠️ Digite um valor para conferência.");
-                return;
-            }
+            const e = estoque[setorAtivo];
+            const correto = e.inicial + e.entrada - e.saida;
 
             if(informado === correto) {
-                alert("✅ COMPLIANCE OK! Inventário batido. O acúmulo de trabalho foi reduzido.");
-                pedidos = Math.max(0, pedidos - 12);
+                alert("✅ Auditoria Finalizada. Saldo de estoque batido no SAP!");
+                acúmulo = Math.max(0, acúmulo - 8);
             } else {
-                alert("🚨 DIVERGÊNCIA! O estoque físico não bate com o sistema. Penalidade aplicada.");
-                pedidos += 5;
+                alert("🚨 ERRO DE COMPLIANCE! O saldo calculado pelo sistema não condiz com sua conferência. Retrabalho gerado.");
+                acúmulo += 5;
             }
-
-            document.getElementById('count').innerText = pedidos;
-            fecharModal();
+            document.getElementById('count').innerText = acúmulo;
+            document.getElementById('modal-tarefa').style.display = 'none';
         }
+
+        atualizarTabela();
     </script>
 </body>
 </html>
