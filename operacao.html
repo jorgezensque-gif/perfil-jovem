@@ -2,129 +2,150 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP - Sistema de Comando Corporativo</title>
+    <title>SVP - Gestão Semanal por Células</title>
     <style>
-        :root { --blue: #2980b9; --dark: #2c3e50; --green: #27ae60; --red: #c0392b; --gold: #f1c40f; --purple: #8e44ad; }
-        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --blue: #2980b9; --dark: #2c3e50; --green: #27ae60; --red: #e74c3c; --gold: #f1c40f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* BARRA LATERAL DE ACESSOS */
-        .sidebar-acesso { width: 280px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; }
-        .perfil-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid var(--gold); }
-        .menu-setor { font-size: 0.85em; color: #bdc3c7; margin-bottom: 10px; }
+        /* PAINEL ESQUERDA: OPERAÇÃO */
+        .col-operacao { flex: 1; padding: 20px; overflow-y: auto; }
+        .card-header { background: white; padding: 20px; border-radius: 12px; border-top: 8px solid var(--dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
-        /* PAINEL CENTRAL */
-        .painel-principal { flex: 1; padding: 25px; overflow-y: auto; }
-        .header-status { display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
-        /* GRIDS DE MONITORAMENTO */
-        .grid-hierarquia { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .card-gestao { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
-        .tag-nivel { position: absolute; top: 10px; right: 10px; font-size: 0.7em; padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; }
-        
-        /* CORES POR NÍVEL */
-        .cor-op { background: var(--blue); }
-        .cor-lider { background: var(--purple); }
-        .cor-gerente { background: var(--green); }
-        .cor-diretor { background: var(--red); }
+        /* GRID DE TIMES (CÉLULAS) */
+        .grid-times { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .time-box { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--blue); }
+        .progresso-bg { height: 12px; background: #eee; border-radius: 6px; margin: 10px 0; overflow: hidden; }
+        .barra-prog { height: 100%; background: var(--green); width: 0%; transition: 1s ease; }
 
-        .btn-acao { width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
-        .progresso-container { height: 8px; background: #eee; border-radius: 4px; margin: 10px 0; overflow: hidden; }
-        .barra { height: 100%; width: 0%; transition: 0.8s; }
+        /* PAINEL DIREITA: GESTÃO E COMPLIANCE */
+        .col-gestao { width: 350px; background: var(--dark); color: white; padding: 20px; border-left: 5px solid #34495e; display: flex; flex-direction: column; }
+        .calendario-semanal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 20px; text-align: center; font-size: 0.7em; }
+        .dia-box { background: #34495e; padding: 5px; border-radius: 3px; }
+        .dia-atual { background: var(--gold); color: black; font-weight: bold; }
+
+        /* TAREFAS */
+        .task-card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
+        .btn-check { background: var(--blue); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar-acesso">
-        <div class="perfil-card">
-            <small>SISTEMA SVP 2026</small>
-            <h3 style="margin:5px 0;">CD Palmas - TO</h3>
-            <div id="identificacao-viva" style="font-size: 0.8em; color: var(--gold);">Sessão: Jorge Zensque</div>
+    <div class="col-operacao">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin:0;">Dashboard de Células - SVP</h2>
+                    <small>Meta Semanal: <b>2.000 Pedidos</b> (500 por Time)</small>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.8em; color: #7f8c8d;">STATUS GLOBAL</span><br>
+                    <b id="global-total" style="font-size: 1.8em; color: var(--blue);">0 / 2000</b>
+                </div>
+            </div>
         </div>
 
-        <div class="menu-setor">ESTRUTURA DE ACESSOS (30 Ativos)</div>
-        <div style="font-size: 0.8em; line-height: 1.6;">
-            🔹 20 Operacionais (Execução)<br>
-            🔹 04 Líderes (Supervisão)<br>
-            🔹 02 Gerentes (Tático)<br>
-            🔹 04 Diretores (Estratégico)
+        <div class="grid-times">
+            <div class="time-box">
+                <div style="display:flex; justify-content:space-between;"><b>Time ALPHA</b> <small>Líder 1</small></div>
+                <div class="progresso-bg"><div id="prog-0" class="barra-prog"></div></div>
+                <small id="txt-0">0 / 500 pedidos</small>
+            </div>
+            <div class="time-box">
+                <div style="display:flex; justify-content:space-between;"><b>Time BETA</b> <small>Líder 2</small></div>
+                <div class="progresso-bg"><div id="prog-1" class="barra-prog"></div></div>
+                <small id="txt-1">0 / 500 pedidos</small>
+            </div>
+            <div class="time-box">
+                <div style="display:flex; justify-content:space-between;"><b>Time GAMMA</b> <small>Líder 3</small></div>
+                <div class="progresso-bg"><div id="prog-2" class="barra-prog"></div></div>
+                <small id="txt-2">0 / 500 pedidos</small>
+            </div>
+            <div class="time-box">
+                <div style="display:flex; justify-content:space-between;"><b>Time DELTA</b> <small>Líder 4</small></div>
+                <div class="progresso-bg"><div id="prog-3" class="barra-prog"></div></div>
+                <small id="txt-3">0 / 500 pedidos</small>
+            </div>
+        </div>
+
+        <h4 style="color: #7f8c8d;">FILA DE LANÇAMENTO (SAP)</h4>
+        <div id="lista-sap"></div>
+    </div>
+
+    <div class="col-gestao">
+        <h3 style="color: var(--gold); text-align: center; margin-top: 0;">PLANEJAMENTO SEMANAL</h3>
+        
+        <div class="calendario-semanal">
+            <div class="dia-box dia-atual">SEG</div>
+            <div class="dia-box">TER</div>
+            <div class="dia-box">QUA</div>
+            <div class="dia-box">QUI</div>
+            <div class="dia-box">SEX</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; font-size: 0.85em;">
+            <b>ESTRUTURA:</b><br>
+            • 20 Operacionais ativos<br>
+            • 04 Líderes (1 p/ time)<br>
+            • 02 Gerentes (Suporte)<br>
+            • 04 Diretores (Compliance)<br>
+            <hr style="border: 0.5px solid #444;">
+            <b>LOG DE ERROS:</b>
+            <div id="error-log" style="color: var(--red); margin-top: 5px; font-size: 0.9em;">Nenhuma divergência.</div>
         </div>
 
         <div style="margin-top: auto;">
-            <button class="btn-acao cor-diretor" onclick="location.href='dashboard.html'">LOGOUT CORPORATIVO</button>
-        </div>
-    </div>
-
-    <div class="painel-principal">
-        <div class="header-status">
-            <div>
-                <h2 style="margin:0;">Painel de Controle Corporativo</h2>
-                <small id="data-atual">Carregando dados de compliance...</small>
-            </div>
-            <div style="text-align: right;">
-                <div style="font-size: 0.8em; color: #7f8c8d;">META GLOBAL SAP</div>
-                <b style="font-size: 1.8em; color: var(--dark);">2.000 <small style="font-size: 0.5em;">PEDIDOS</small></b>
-            </div>
-        </div>
-
-        <div class="grid-hierarquia">
-            <div class="card-gestao" style="border-bottom: 5px solid var(--red);">
-                <span class="tag-nivel cor-diretor">DIRETORIA (4)</span>
-                <h4>Relatório de Compliance Global</h4>
-                <p style="font-size: 0.85em; color: #666;">Analise de divergências e travas de sistema em Palmas.</p>
-                <div class="progresso-container"><div class="barra cor-diretor" id="p-diretor" style="width: 85%;"></div></div>
-                <button class="btn-acao cor-diretor">AUDITAR FILIAL</button>
-            </div>
-
-            <div class="card-gestao" style="border-bottom: 5px solid var(--green);">
-                <span class="tag-nivel cor-gerente">GERÊNCIA (2)</span>
-                <h4>Gestão Tática de Produtividade</h4>
-                <p style="font-size: 0.85em; color: #666;">Ajuste de metas e balanceamento de equipes.</p>
-                <div class="progresso-container"><div class="barra cor-gerente" id="p-gerente" style="width: 60%;"></div></div>
-                <button class="btn-acao cor-gerente">REMANEJAR TIMES</button>
-            </div>
-
-            <div class="card-gestao" style="border-bottom: 5px solid var(--purple);">
-                <span class="tag-nivel cor-lider">LIDERANÇA (4)</span>
-                <h4>Supervisão de Células</h4>
-                <p style="font-size: 0.85em; color: #666;">Suporte direto aos 20 jovens operacionais.</p>
-                <div class="progresso-container"><div class="barra cor-purple" id="p-lider" style="width: 45%; background: var(--purple);"></div></div>
-                <button class="btn-acao cor-lider">VALIDAR CONFERÊNCIA</button>
-            </div>
-
-            <div class="card-gestao" style="border-bottom: 5px solid var(--blue);">
-                <span class="tag-nivel cor-op">OPERACIONAL (20)</span>
-                <h4>Execução de Pedidos</h4>
-                <p style="font-size: 0.85em; color: #666;">Lançamento de entradas e saídas no SAP Simulado.</p>
-                <div class="progresso-container"><div class="barra cor-op" id="p-op" style="width: 30%;"></div></div>
-                <button class="btn-acao cor-op" onclick="iniciarTarefa()">BAIXAR PEDIDO</button>
-            </div>
-        </div>
-
-        <div id="log-vendas" style="margin-top: 25px; background: white; padding: 15px; border-radius: 10px; font-size: 0.85em; border: 1px solid #ddd;">
-            <b>ATIVIDADE RECENTE:</b> [SISTEMA] Aguardando início do turno de 4 horas...
+            <p style="font-size: 0.75em; opacity: 0.7;">Responsável: Jorge Zensque<br>CD Palmas - TO</p>
+            <button onclick="location.href='dashboard.html'" style="width: 100%; padding: 10px; background: #555; border: none; color: white; border-radius: 5px; cursor: pointer;">Sair do Terminal</button>
         </div>
     </div>
 
     <script>
-        // Atualiza a data e hora do sistema
-        function atualizarData() {
-            const agora = new Date();
-            document.getElementById('data-atual').innerText = agora.toLocaleDateString('pt-BR') + " | Turno Ativo: 08:00 - 12:00";
-        }
-        setInterval(atualizarData, 1000);
+        let metas = [0, 0, 0, 0];
+        let totalGlobal = 0;
+        const times = ["ALPHA", "BETA", "GAMMA", "DELTA"];
+        const itens = ["Óculos Aero", "Cozinha Lar", "Vestuário", "Papelaria"];
 
-        function iniciarTarefa() {
-            const pedido = Math.floor(Math.random() * 9999);
-            const log = document.getElementById('log-vendas');
-            log.innerHTML = `<b>[OPERACIONAL]</b> Jovem iniciou separação do pedido #${pedido} no Setor de Eletrônicos.<br>` + log.innerHTML;
+        // Motor de Pedidos: 1 pedido a cada 20 segundos (Foco em qualidade)
+        setInterval(() => {
+            const timeIdx = Math.floor(Math.random() * 4);
+            const item = itens[Math.floor(Math.random() * 4)];
             
-            // Simula progresso visual
-            let barra = document.getElementById('p-op');
-            let atual = parseInt(barra.style.width);
-            if(atual < 100) barra.style.width = (atual + 5) + "%";
-        }
+            const card = document.createElement('div');
+            card.className = "task-card";
+            card.innerHTML = `
+                <span><b>[TIME ${times[timeIdx]}]</b> Validar estoque: ${item}</span>
+                <button class="btn-check" onclick="baixar('${timeIdx}', '${item}', this)">BAIXAR</button>
+            `;
+            
+            const lista = document.getElementById('lista-sap');
+            lista.prepend(card);
+            if(lista.children.length > 6) lista.lastChild.remove();
+        }, 20000);
 
-        atualizarData();
+        function baixar(idx, item, btn) {
+            // Simula conferência do operacional
+            const conf = confirm(`Time ${times[idx]}: Confirmar conferência física de ${item}?`);
+            
+            if(conf) {
+                // Cada baixa correta computa 5 pedidos na meta semanal do time
+                metas[idx] += 5;
+                totalGlobal += 5;
+                
+                // Atualiza progresso do time
+                const perc = (metas[idx] / 500) * 100;
+                document.getElementById(`prog-${idx}`).style.width = perc + "%";
+                document.getElementById(`txt-${idx}`).innerText = `${metas[idx]} / 500 pedidos`;
+                
+                // Atualiza global
+                document.getElementById('global-total').innerText = `${totalGlobal} / 2000`;
+                
+                btn.parentElement.style.opacity = "0.4";
+                btn.disabled = true;
+                btn.innerText = "OK";
+            } else {
+                document.getElementById('error-log').innerText = `⚠️ Divergência em ${item} (Time ${times[idx]})`;
+            }
+        }
     </script>
 </body>
 </html>
