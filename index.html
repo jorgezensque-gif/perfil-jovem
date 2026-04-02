@@ -22,7 +22,7 @@
         
         <button onclick="login()">AUTENTICAR NO SAP</button>
         
-        <p id="error">❌ Credenciais inválidas ou sem permissão.</p>
+        <p id="error">❌ Credenciais inválidas.</p>
         
         <div style="margin-top: 25px; font-size: 0.7em; color: #bdc3c7;">
             Responsável: Jorge Zensque [2026]
@@ -30,44 +30,23 @@
     </div>
 
     <script>
-        // BASE DE DADOS BLINDADA - 30 ACESSOS
         const users = {
-            // TIME 1 (Alpha)
+            // TIME 1
             'op_01': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
             'op_02': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
             'op_03': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
             'op_04': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
             'op_05': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
             'lider_01': { p: 'lider789', n: 'LIDER', t: '1' },
-
-            // TIME 2 (Beta)
+            // TIME 2
             'op_06': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
             'op_07': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
             'op_08': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
             'op_09': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
             'op_10': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
             'lider_02': { p: 'lider789', n: 'LIDER', t: '2' },
-
-            // TIME 3 (Gamma)
-            'op_11': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
-            'op_12': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
-            'op_13': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
-            'op_14': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
-            'op_15': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
-            'lider_03': { p: 'lider789', n: 'LIDER', t: '3' },
-
-            // TIME 4 (Delta)
-            'op_16': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
-            'op_17': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
-            'op_18': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
-            'op_19': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
-            'op_20': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
-            'lider_04': { p: 'lider789', n: 'LIDER', t: '4' },
-
-            // GESTÃO E CONSELHO
+            // GESTÃO
             'gerente_01': { p: 'gestao456', n: 'GERENTE', t: 'all' },
-            'gerente_02': { p: 'gestao456', n: 'GERENTE', t: 'all' },
-            'ceo_jovem': { p: 'direcao789', n: 'CEO', t: 'all' },
             'jorge_zensque': { p: 'master2026', n: 'CONSELHO', t: 'all' }
         };
 
@@ -77,4 +56,17 @@
             const errorMsg = document.getElementById('error');
             
             if(users[u] && users[u].p === p) {
-                //
+                // SALVA A SESSÃO
+                localStorage.setItem('svp_nivel', users[u].n);
+                localStorage.setItem('svp_user', u);
+                localStorage.setItem('svp_time', users[u].t);
+                
+                // REDIRECIONA PARA A TELA DE OPERAÇÃO
+                window.location.href = 'operacao.html';
+            } else { 
+                errorMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
