@@ -1,42 +1,80 @@
-<script>
-    // LISTA ATUALIZADA DE ACESSOS SVP 4.0 - PALMAS/TO
-    const users = {
-        // OPERACIONAIS (Cada jovem usa um desses, de 01 a 20)
-        'op_01': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-        'op_02': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-        'op_03': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-        'op_04': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-        'op_05': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-        'op_06': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
-        'op_07': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
-        // ... (você pode seguir a lógica até o op_20)
-
-        // LIDERANÇA (4 Líderes)
-        'lider_01': { p: 'lider789', n: 'LIDER', t: '1' },
-        'lider_02': { p: 'lider789', n: 'LIDER', t: '2' },
-        'lider_03': { p: 'lider789', n: 'LIDER', t: '3' },
-        'lider_04': { p: 'lider789', n: 'LIDER', t: '4' },
-
-        // GERÊNCIA E DIRETORIA
-        'gerente_01': { p: 'gestao456', n: 'GERENTE' },
-        'ceo_jovem': { p: 'direcao789', n: 'CEO' },
-        'jorge_zensque': { p: 'master2026', n: 'CONSELHO' }
-    };
-
-    function login() {
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>SVP - Login Corporativo Palmas</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 350px; }
+        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-size: 1.2em; line-height: 1.2; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        button { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1em; transition: 0.3s; }
+        button:hover { background: #1f6391; }
+        #error { color: #e74c3c; font-size: 0.85em; display: none; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="logo-text">PROJETO PESCAR - SVP 4.0<br><small style="color: #7f8c8d;">Unidade Palmas / TO</small></div>
         
-        if(users[u] && users[u].p === p) {
-            // Salva as informações de quem logou
-            localStorage.setItem('svp_nivel', users[u].n);
-            localStorage.setItem('svp_user', u);
-            localStorage.setItem('svp_time', users[u].t || '0'); // Salva o time se houver
+        <input type="text" id="user" placeholder="Usuário (ex: op_01, lider_01)">
+        <input type="password" id="pass" placeholder="Senha">
+        
+        <button onclick="login()">AUTENTICAR NO SAP</button>
+        
+        <p id="error">❌ Credenciais inválidas ou sem permissão.</p>
+        
+        <div style="margin-top: 25px; font-size: 0.7em; color: #bdc3c7;">
+            Responsável: Jorge Zensque [2026]
+        </div>
+    </div>
+
+    <script>
+        // BASE DE DADOS BLINDADA - 30 ACESSOS
+        const users = {
+            // TIME 1 (Alpha)
+            'op_01': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+            'op_02': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+            'op_03': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+            'op_04': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+            'op_05': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+            'lider_01': { p: 'lider789', n: 'LIDER', t: '1' },
+
+            // TIME 2 (Beta)
+            'op_06': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+            'op_07': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+            'op_08': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+            'op_09': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+            'op_10': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+            'lider_02': { p: 'lider789', n: 'LIDER', t: '2' },
+
+            // TIME 3 (Gamma)
+            'op_11': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
+            'op_12': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
+            'op_13': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
+            'op_14': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
+            'op_15': { p: 'pescar123', n: 'OPERACIONAL', t: '3' },
+            'lider_03': { p: 'lider789', n: 'LIDER', t: '3' },
+
+            // TIME 4 (Delta)
+            'op_16': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
+            'op_17': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
+            'op_18': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
+            'op_19': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
+            'op_20': { p: 'pescar123', n: 'OPERACIONAL', t: '4' },
+            'lider_04': { p: 'lider789', n: 'LIDER', t: '4' },
+
+            // GESTÃO E CONSELHO
+            'gerente_01': { p: 'gestao456', n: 'GERENTE', t: 'all' },
+            'gerente_02': { p: 'gestao456', n: 'GERENTE', t: 'all' },
+            'ceo_jovem': { p: 'direcao789', n: 'CEO', t: 'all' },
+            'jorge_zensque': { p: 'master2026', n: 'CONSELHO', t: 'all' }
+        };
+
+        function login() {
+            const u = document.getElementById('user').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value;
+            const errorMsg = document.getElementById('error');
             
-            // Redireciona para o Dashboard
-            window.location.href = 'dashboard.html';
-        } else { 
-            document.getElementById('error').style.display = 'block'; 
-        }
-    }
-</script>
+            if(users[u] && users[u].p === p) {
+                //
