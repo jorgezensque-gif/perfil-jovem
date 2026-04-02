@@ -2,149 +2,165 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP - Gestão Semanal por Células</title>
+    <title>SVP - Sistema de Gestão CD Palmas</title>
     <style>
-        :root { --blue: #2980b9; --dark: #2c3e50; --green: #27ae60; --red: #e74c3c; --gold: #f1c40f; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --blue: #2980b9; --dark: #2c3e50; --green: #27ae60; --red: #e74c3c; --gold: #f1c40f; --purple: #8e44ad; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* PAINEL ESQUERDA: OPERAÇÃO */
-        .col-operacao { flex: 1; padding: 20px; overflow-y: auto; }
-        .card-header { background: white; padding: 20px; border-radius: 12px; border-top: 8px solid var(--dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        /* SIDEBAR DINÂMICA */
+        .sidebar { width: 300px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
+        .perfil-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
         
-        /* GRID DE TIMES (CÉLULAS) */
-        .grid-times { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
-        .time-box { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--blue); }
-        .progresso-bg { height: 12px; background: #eee; border-radius: 6px; margin: 10px 0; overflow: hidden; }
-        .barra-prog { height: 100%; background: var(--green); width: 0%; transition: 1s ease; }
+        /* ÁREA PRINCIPAL */
+        .main { flex: 1; padding: 25px; overflow-y: auto; }
+        .stats-header { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; margin-bottom: 20px; }
+        
+        /* GRID DE TIMES */
+        .grid-times { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .time-card { background: white; padding: 15px; border-radius: 10px; border-top: 4px solid var(--blue); }
+        .progress-bar { height: 10px; background: #eee; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .fill { height: 100%; background: var(--green); width: 0%; transition: 0.8s; }
 
-        /* PAINEL DIREITA: GESTÃO E COMPLIANCE */
-        .col-gestao { width: 350px; background: var(--dark); color: white; padding: 20px; border-left: 5px solid #34495e; display: flex; flex-direction: column; }
-        .calendario-semanal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 20px; text-align: center; font-size: 0.7em; }
-        .dia-box { background: #34495e; padding: 5px; border-radius: 3px; }
-        .dia-atual { background: var(--gold); color: black; font-weight: bold; }
-
-        /* TAREFAS */
-        .task-card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
-        .btn-check { background: var(--blue); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        /* TABELA DE ESTOQUE SAP */
+        .sap-table { width: 100%; border-collapse: collapse; font-size: 0.85em; margin-top: 10px; }
+        .sap-table th, .sap-table td { border: 1px solid #444; padding: 8px; text-align: center; }
+        
+        /* MODAL */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 350px; text-align: center; color: #333; }
+        input { width: 100%; padding: 15px; font-size: 1.5em; text-align: center; margin: 15px 0; border: 2px solid #ddd; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="col-operacao">
-        <div class="card-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h2 style="margin:0;">Dashboard de Células - SVP</h2>
-                    <small>Meta Semanal: <b>2.000 Pedidos</b> (500 por Time)</small>
-                </div>
-                <div style="text-align: right;">
-                    <span style="font-size: 0.8em; color: #7f8c8d;">STATUS GLOBAL</span><br>
-                    <b id="global-total" style="font-size: 1.8em; color: var(--blue);">0 / 2000</b>
-                </div>
-            </div>
+    <div class="sidebar">
+        <div class="perfil-box">
+            <small>UNIDADE: PALMAS - TO</small>
+            <h3 id="display-perfil" style="margin:5px 0;">Operador SAP</h3>
+            <div id="display-time" style="color: var(--gold); font-weight: bold;">Célula: --</div>
         </div>
 
-        <div class="grid-times">
-            <div class="time-box">
-                <div style="display:flex; justify-content:space-between;"><b>Time ALPHA</b> <small>Líder 1</small></div>
-                <div class="progresso-bg"><div id="prog-0" class="barra-prog"></div></div>
-                <small id="txt-0">0 / 500 pedidos</small>
-            </div>
-            <div class="time-box">
-                <div style="display:flex; justify-content:space-between;"><b>Time BETA</b> <small>Líder 2</small></div>
-                <div class="progresso-bg"><div id="prog-1" class="barra-prog"></div></div>
-                <small id="txt-1">0 / 500 pedidos</small>
-            </div>
-            <div class="time-box">
-                <div style="display:flex; justify-content:space-between;"><b>Time GAMMA</b> <small>Líder 3</small></div>
-                <div class="progresso-bg"><div id="prog-2" class="barra-prog"></div></div>
-                <small id="txt-2">0 / 500 pedidos</small>
-            </div>
-            <div class="time-box">
-                <div style="display:flex; justify-content:space-between;"><b>Time DELTA</b> <small>Líder 4</small></div>
-                <div class="progresso-bg"><div id="prog-3" class="barra-prog"></div></div>
-                <small id="txt-3">0 / 500 pedidos</small>
-            </div>
-        </div>
+        <h4 style="color: var(--gold);">ESTOQUE EM TEMPO REAL</h4>
+        <table class="sap-table">
+            <thead><tr><th>ITEM</th><th>S. INICIAL</th><th>MOV.</th><th>SALDO</th></tr></thead>
+            <tbody id="corpo-estoque"></tbody>
+        </table>
 
-        <h4 style="color: #7f8c8d;">FILA DE LANÇAMENTO (SAP)</h4>
-        <div id="lista-sap"></div>
+        <div style="margin-top: auto; font-size: 0.8em; opacity: 0.7;">
+            Responsável: Jorge Zensque<br>Compliance: Projeto Pescar 2026
+        </div>
     </div>
 
-    <div class="col-gestao">
-        <h3 style="color: var(--gold); text-align: center; margin-top: 0;">PLANEJAMENTO SEMANAL</h3>
-        
-        <div class="calendario-semanal">
-            <div class="dia-box dia-atual">SEG</div>
-            <div class="dia-box">TER</div>
-            <div class="dia-box">QUA</div>
-            <div class="dia-box">QUI</div>
-            <div class="dia-box">SEX</div>
+    <div class="main">
+        <div class="stats-header">
+            <div>
+                <h2 style="margin:0;">Monitor de Operações Semanais</h2>
+                <small>Meta da Unidade: 2.000 Pedidos | Turno 4h</small>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 0.8em;">META GLOBAL</span><br>
+                <b id="global-total" style="font-size: 2em; color: var(--blue);">0 / 2000</b>
+            </div>
         </div>
 
-        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; font-size: 0.85em;">
-            <b>ESTRUTURA:</b><br>
-            • 20 Operacionais ativos<br>
-            • 04 Líderes (1 p/ time)<br>
-            • 02 Gerentes (Suporte)<br>
-            • 04 Diretores (Compliance)<br>
-            <hr style="border: 0.5px solid #444;">
-            <b>LOG DE ERROS:</b>
-            <div id="error-log" style="color: var(--red); margin-top: 5px; font-size: 0.9em;">Nenhuma divergência.</div>
+        <div class="grid-times" id="container-times">
+            <div class="time-card" id="card-0"><b>TIME ALPHA</b><div class="progress-bar"><div class="fill" id="f-0"></div></div><small id="t-0">0 / 500</small></div>
+            <div class="time-card" id="card-1"><b>TIME BETA</b><div class="progress-bar"><div class="fill" id="f-1"></div></div><small id="t-1">0 / 500</small></div>
+            <div class="time-card" id="card-2"><b>TIME GAMMA</b><div class="progress-bar"><div class="fill" id="f-2"></div></div><small id="t-2">0 / 500</small></div>
+            <div class="time-card" id="card-3"><b>TIME DELTA</b><div class="progress-bar"><div class="fill" id="f-3"></div></div><small id="t-3">0 / 500</small></div>
         </div>
 
-        <div style="margin-top: auto;">
-            <p style="font-size: 0.75em; opacity: 0.7;">Responsável: Jorge Zensque<br>CD Palmas - TO</p>
-            <button onclick="location.href='dashboard.html'" style="width: 100%; padding: 10px; background: #555; border: none; color: white; border-radius: 5px; cursor: pointer;">Sair do Terminal</button>
+        <h3 id="titulo-tarefas">📥 FILA DE PEDIDOS DISPONÍVEIS</h3>
+        <div id="lista-pedidos"></div>
+    </div>
+
+    <div id="modal">
+        <div class="modal-content">
+            <h2 id="m-titulo">Lançamento SAP</h2>
+            <p id="m-desc">Confirme o saldo atual de estoque.</p>
+            <input type="number" id="m-input" placeholder="000">
+            <button onclick="confirmarBaixa()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">EFETUAR BAIXA</button>
         </div>
     </div>
 
     <script>
-        let metas = [0, 0, 0, 0];
-        let totalGlobal = 0;
-        const times = ["ALPHA", "BETA", "GAMMA", "DELTA"];
-        const itens = ["Óculos Aero", "Cozinha Lar", "Vestuário", "Papelaria"];
+        // CONFIGURAÇÕES DE ACESSO
+        const urlParams = new URLSearchParams(window.location.search);
+        const perfil = urlParams.get('perfil') || 'operador';
+        const timeAtivo = parseInt(urlParams.get('time')) - 1 || 0;
 
-        // Motor de Pedidos: 1 pedido a cada 20 segundos (Foco em qualidade)
+        let metas = [0, 0, 0, 0];
+        let estoque = {
+            "Óculos": { i: 500, m: 0 }, "Cozinha": { i: 300, m: 0 },
+            "Eletrônicos": { i: 200, m: 0 }, "Papelaria": { i: 600, m: 0 }
+        };
+
+        let itemAtual = "";
+        let timePedido = 0;
+
+        window.onload = () => {
+            document.getElementById('display-perfil').innerText = perfil.toUpperCase();
+            if(perfil === 'operador') document.getElementById('display-time').innerText = "TIME: " + (timeAtivo + 1);
+            else document.getElementById('display-time').innerText = "ACESSO GESTÃO";
+            atualizarTabela();
+        };
+
+        // GERA PEDIDOS (1 a cada 15 seg)
         setInterval(() => {
-            const timeIdx = Math.floor(Math.random() * 4);
+            const tIdx = perfil === 'operador' ? timeAtivo : Math.floor(Math.random() * 4);
+            const itens = Object.keys(estoque);
             const item = itens[Math.floor(Math.random() * 4)];
             
-            const card = document.createElement('div');
-            card.className = "task-card";
-            card.innerHTML = `
-                <span><b>[TIME ${times[timeIdx]}]</b> Validar estoque: ${item}</span>
-                <button class="btn-check" onclick="baixar('${timeIdx}', '${item}', this)">BAIXAR</button>
-            `;
-            
-            const lista = document.getElementById('lista-sap');
-            lista.prepend(card);
-            if(lista.children.length > 6) lista.lastChild.remove();
-        }, 20000);
+            // Simula entrada/saída
+            estoque[item].m += Math.floor(Math.random() * 5) - 2;
+            atualizarTabela();
 
-        function baixar(idx, item, btn) {
-            // Simula conferência do operacional
-            const conf = confirm(`Time ${times[idx]}: Confirmar conferência física de ${item}?`);
+            const card = document.createElement('div');
+            card.style = "background:white; padding:15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-left:5px solid var(--blue)";
+            card.innerHTML = `<span><b>[TIME ${tIdx+1}]</b> Item: ${item}</span> 
+                             <button onclick="abrirModal('${item}', ${tIdx})" style="background:var(--blue); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">CONFERIR</button>`;
             
-            if(conf) {
-                // Cada baixa correta computa 5 pedidos na meta semanal do time
-                metas[idx] += 5;
-                totalGlobal += 5;
-                
-                // Atualiza progresso do time
-                const perc = (metas[idx] / 500) * 100;
-                document.getElementById(`prog-${idx}`).style.width = perc + "%";
-                document.getElementById(`txt-${idx}`).innerText = `${metas[idx]} / 500 pedidos`;
-                
-                // Atualiza global
-                document.getElementById('global-total').innerText = `${totalGlobal} / 2000`;
-                
-                btn.parentElement.style.opacity = "0.4";
-                btn.disabled = true;
-                btn.innerText = "OK";
-            } else {
-                document.getElementById('error-log').innerText = `⚠️ Divergência em ${item} (Time ${times[idx]})`;
+            const lista = document.getElementById('lista-pedidos');
+            lista.prepend(card);
+            if(lista.children.length > 5) lista.lastChild.remove();
+        }, 15000);
+
+        function atualizarTabela() {
+            let h = "";
+            for(let i in estoque) {
+                let s = estoque[i].i + estoque[i].m;
+                h += `<tr><td>${i}</td><td>${estoque[i].i}</td><td>${estoque[i].m}</td><td><b>${s}</b></td></tr>`;
             }
+            document.getElementById('corpo-estoque').innerHTML = h;
+        }
+
+        function abrirModal(item, t) {
+            itemAtual = item;
+            timePedido = t;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('m-titulo').innerText = item;
+            document.getElementById('m-input').value = "";
+            document.getElementById('m-input').focus();
+        }
+
+        function confirmarBaixa() {
+            const val = parseInt(document.getElementById('m-input').value);
+            const real = estoque[itemAtual].i + estoque[itemAtual].m;
+
+            if(val === real) {
+                alert("✅ SAP Atualizado!");
+                metas[timePedido] += 10;
+                let global = metas.reduce((a, b) => a + b, 0);
+                document.getElementById('global-total').innerText = global + " / 2000";
+                
+                // Atualiza barra do time
+                let p = (metas[timePedido] / 500) * 100;
+                document.getElementById(`f-${timePedido}`).style.width = p + "%";
+                document.getElementById(`t-${timePedido}`).innerText = `${metas[timePedido]} / 500`;
+            } else {
+                alert("🚨 Erro de Inventário! O saldo correto era " + real);
+            }
+            document.getElementById('modal').style.display = 'none';
         }
     </script>
 </body>
