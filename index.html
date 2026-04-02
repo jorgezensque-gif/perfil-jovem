@@ -1,39 +1,42 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>SVP - Login Corporativo</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 320px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 20px; font-size: 1.2em; }
-    </style>
-</head>
-<body>
-    <div class="login-box">
-        <div class="logo-text">EMPRESA JÚNIOR DIGITAL<br><small>SVP 4.0 - Palmas/TO</small></div>
-        <input type="text" id="user" placeholder="Usuário">
-        <input type="password" id="pass" placeholder="Senha">
-        <button onclick="login()">ACESSAR SISTEMA</button>
-        <p id="error" style="color:red; font-size: 0.8em; display:none; margin-top:10px;">Credenciais inválidas.</p>
-    </div>
-    <script>
-        const users = {
-            'op_jovem': { p: 'pescar123', n: 'OPERACIONAL' },
-            'ceo_jovem': { p: 'direcao789', n: 'CEO' },
-            'jorge_zensque': { p: 'master2026', n: 'CONSELHO' }
-        };
-        function login() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            if(users[u] && users[u].p === p) {
-                localStorage.setItem('svp_nivel', users[u].n);
-                localStorage.setItem('svp_user', u);
-                window.location.href = 'dashboard.html';
-            } else { document.getElementById('error').style.display = 'block'; }
+<script>
+    // LISTA ATUALIZADA DE ACESSOS SVP 4.0 - PALMAS/TO
+    const users = {
+        // OPERACIONAIS (Cada jovem usa um desses, de 01 a 20)
+        'op_01': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+        'op_02': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+        'op_03': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+        'op_04': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+        'op_05': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
+        'op_06': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+        'op_07': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
+        // ... (você pode seguir a lógica até o op_20)
+
+        // LIDERANÇA (4 Líderes)
+        'lider_01': { p: 'lider789', n: 'LIDER', t: '1' },
+        'lider_02': { p: 'lider789', n: 'LIDER', t: '2' },
+        'lider_03': { p: 'lider789', n: 'LIDER', t: '3' },
+        'lider_04': { p: 'lider789', n: 'LIDER', t: '4' },
+
+        // GERÊNCIA E DIRETORIA
+        'gerente_01': { p: 'gestao456', n: 'GERENTE' },
+        'ceo_jovem': { p: 'direcao789', n: 'CEO' },
+        'jorge_zensque': { p: 'master2026', n: 'CONSELHO' }
+    };
+
+    function login() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        
+        if(users[u] && users[u].p === p) {
+            // Salva as informações de quem logou
+            localStorage.setItem('svp_nivel', users[u].n);
+            localStorage.setItem('svp_user', u);
+            localStorage.setItem('svp_time', users[u].t || '0'); // Salva o time se houver
+            
+            // Redireciona para o Dashboard
+            window.location.href = 'dashboard.html';
+        } else { 
+            document.getElementById('error').style.display = 'block'; 
         }
-    </script>
-</body>
-</html>
+    }
+</script>
