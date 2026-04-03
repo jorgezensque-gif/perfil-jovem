@@ -2,35 +2,30 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Portal Palmas</title>
+    <title>SVP 4.0 - Unidade Palmas</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 340px; }
-        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 25px; font-size: 1.3em; line-height: 1.2; }
-        .logo-text small { color: #7f8c8d; font-size: 0.7em; display: block; margin-top: 5px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; outline: none; }
-        button.btn-login { width: 100%; padding: 14px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; }
+        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 25px; font-size: 1.3em; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         #error { color: #e74c3c; font-size: 0.85em; display: none; margin-top: 15px; font-weight: bold; }
-        .footer-info { margin-top: 30px; font-size: 0.7em; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
     <div class="login-box">
-        <div class="logo-text">PROJETO PESCAR - SVP 4.0<small>Unidade Palmas / TO</small></div>
-        <input type="text" id="user" placeholder="Usuário (ex: op_01)" autocomplete="off">
+        <div class="logo-text">PROJETO PESCAR - SVP 4.0<br><small style="color:#7f8c8d; font-size:0.7em">Unidade Palmas / TO</small></div>
+        <input type="text" id="user" placeholder="Usuário (ex: op_01)">
         <input type="password" id="pass" placeholder="Senha">
-        <button class="btn-login" onclick="login()">AUTENTICAR NO SAP</button>
+        <button onclick="login()">AUTENTICAR NO SAP</button>
         <p id="error">❌ Usuário ou senha incorretos.</p>
-        <div class="footer-info">Responsável: Jorge Zensque [2026]<br>Sistema de Gestão por Células</div>
     </div>
 
     <script>
         const users = {
-            'op_01': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-            'op_02': { p: 'pescar123', n: 'OPERACIONAL', t: '1' },
-            'op_06': { p: 'pescar123', n: 'OPERACIONAL', t: '2' },
-            'lider_01': { p: 'lider789', n: 'LIDER', t: '1' },
-            'jorge_zensque': { p: 'master2026', n: 'CONSELHO', t: 'all' }
+            'op_01': { p: 'pescar123', t: '1' },
+            'op_02': { p: 'pescar123', t: '1' },
+            'jorge_zensque': { p: 'master2026', t: 'all' }
         };
 
         function login() {
