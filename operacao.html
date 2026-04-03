@@ -2,126 +2,70 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP - Gestão por Células Palmas</title>
+    <title>SVP - Sistema de Gestão Palmas</title>
     <style>
-        :root { --blue: #2980b9; --dark: #2c3e50; --green: #27ae60; --red: #e74c3c; --gold: #f1c40f; }
+        :root { --blue: #2980b9; --dark: #2c3e50; --gold: #f1c40f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        .sidebar { width: 300px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
-        .perfil-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
+        .sidebar { width: 300px; background: var(--dark); color: white; padding: 20px; border-right: 5px solid #34495e; }
         .main { flex: 1; padding: 25px; overflow-y: auto; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--blue); display: flex; justify-content: space-between; align-items: center; }
         
-        .sap-table { width: 100%; border-collapse: collapse; font-size: 0.8em; margin-top: 10px; color: #ecf0f1; }
-        .sap-table th, .sap-table td { border: 1px solid #444; padding: 8px; text-align: center; }
-
-        /* COLETOR DE AUDITORIA FLUTUANTE */
-        #svp-pad { position: fixed; bottom: 20px; right: 20px; width: 180px; background: var(--dark); border: 2px solid var(--gold); border-radius: 12px; padding: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; }
-        #display-pad { background: #1e272e; color: #2ecc71; padding: 8px; text-align: right; font-size: 1.1em; margin-bottom: 8px; border-radius: 5px; font-family: monospace; }
-        .grid-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-        .grid-pad button { padding: 8px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; background: #34495e; color: white; }
-
-        /* MODAL */
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 320px; text-align: center; }
-        input#m-input { width: 100%; padding: 15px; font-size: 1.5em; text-align: center; margin-bottom: 15px; }
+        /* ESTILO DO COLETOR SVP-PAD */
+        #svp-pad { position: fixed; bottom: 20px; right: 20px; width: 200px; background: #2c3e50; border: 2px solid var(--gold); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #display-pad { background: #1e272e; color: #2ecc71; padding: 10px; text-align: right; font-size: 1.2em; border-radius: 5px; margin-bottom: 10px; font-family: monospace; }
+        .grid-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .grid-buttons button { padding: 10px; border: none; border-radius: 4px; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
+        .grid-buttons button:active { background: var(--gold); color: black; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="perfil-box">
-            <small>UNIDADE: PALMAS - TO</small>
-            <h3 id="display-perfil" style="margin:5px 0;">--</h3>
-            <div id="display-time" style="color: var(--gold); font-weight: bold;">Célula: --</div>
-        </div>
-        <h4 style="color: var(--gold);">ESTOQUE SAP</h4>
-        <table class="sap-table">
-            <thead><tr><th>ITEM</th><th>INICIAL</th><th>MOV.</th><th>SALDO</th></tr></thead>
-            <tbody id="corpo-estoque"></tbody>
-        </table>
-        <div style="margin-top: auto; font-size: 0.7em; opacity: 0.6;">Responsável: Jorge Zensque | 2026</div>
+        <h3 id="u-nome">--</h3>
+        <p id="u-time" style="color:var(--gold)">Célula: --</p>
+        <hr>
+        <h4>ESTOQUE ATUAL</h4>
+        <div id="estoque-lista" style="font-size: 0.9em;"></div>
     </div>
 
     <div class="main">
-        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:20px; border-radius:12px; margin-bottom:20px;">
-            <h2 style="margin:0;">Monitor de Operações</h2>
-            <b id="global-total" style="font-size: 1.5em; color: var(--blue);">0 / 2000</b>
-        </div>
-        <div id="lista-pedidos"></div>
+        <h2>📥 Fila de Pedidos Disponíveis</h2>
+        <div id="pedidos"></div>
     </div>
 
     <div id="svp-pad">
-        <div style="font-size: 0.6em; text-align: center; color: var(--gold); margin-bottom: 5px;">AUDITORIA V4.0</div>
+        <div style="font-size: 0.7em; margin-bottom: 5px; color: var(--gold);">AUDITORIA LOGÍSTICA V4.0</div>
         <div id="display-pad">0</div>
-        <div class="grid-pad">
+        <div class="grid-buttons">
             <button onclick="teclar(7)">7</button><button onclick="teclar(8)">8</button><button onclick="teclar(9)">9</button>
             <button onclick="teclar(4)">4</button><button onclick="teclar(5)">5</button><button onclick="teclar(6)">6</button>
             <button onclick="teclar(1)">1</button><button onclick="teclar(2)">2</button><button onclick="teclar(3)">3</button>
-            <button onclick="limparPad()" style="background:var(--red)">C</button><button onclick="teclar(0)">0</button><button onclick="calcularPad()" style="background:var(--green)">=</button>
-        </div>
-    </div>
-
-    <div id="modal">
-        <div class="modal-content">
-            <h2 id="m-titulo">Lançamento</h2>
-            <input type="number" id="m-input" placeholder="Saldo">
-            <button onclick="confirmarBaixa()" style="width:100%; padding:15px; background:var(--green); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">EFETUAR BAIXA SAP</button>
+            <button onclick="limparPad()" style="background:#e74c3c">C</button><button onclick="teclar(0)">0</button><button onclick="calcularPad()" style="background:#27ae60">=</button>
         </div>
     </div>
 
     <script>
-        // CARREGAMENTO DE DADOS DA SESSÃO
-        const userAtivo = localStorage.getItem('svp_user') || 'VISITANTE';
-        const timeAtivo = localStorage.getItem('svp_time') || '1';
-        
-        let estoque = { "Óculos": 500, "Cozinha": 300, "Eletrônicos": 200, "Papelaria": 600 };
-        let itemAtual = "";
+        const user = localStorage.getItem('svp_user');
+        const time = localStorage.getItem('svp_time');
 
-        window.onload = () => {
-            document.getElementById('display-perfil').innerText = userAtivo;
-            document.getElementById('display-time').innerText = "CÉLULA: " + timeAtivo;
-            atualizarTabela();
-            gerarPedidos();
-        };
+        document.getElementById('u-nome').innerText = user || 'OPERADOR';
+        document.getElementById('u-time').innerText = "Célula: " + (time || '--');
 
-        function atualizarTabela() {
-            let h = "";
-            for(let i in estoque) { h += `<tr><td>${i}</td><td>${estoque[i]}</td><td>0</td><td><b>${estoque[i]}</b></td></tr>`; }
-            document.getElementById('corpo-estoque').innerHTML = h;
-        }
-
-        function gerarPedidos() {
-            setInterval(() => {
-                const itens = Object.keys(estoque);
-                const item = itens[Math.floor(Math.random() * itens.length)];
-                const card = document.createElement('div');
-                card.style = "background:white; padding:15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-left:5px solid var(--blue)";
-                card.innerHTML = `<span><b>[TIME ${timeAtivo}]</b> Conferência: ${item}</span> <button onclick="abrirModal('${item}')" style="background:var(--blue); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">LANÇAR</button>`;
-                document.getElementById('lista-pedidos').prepend(card);
-            }, 8000);
-        }
-
-        function abrirModal(item) {
-            itemAtual = item;
-            document.getElementById('m-titulo').innerText = item;
-            document.getElementById('modal').style.display = 'flex';
-        }
-
-        function confirmarBaixa() {
-            const val = parseInt(document.getElementById('m-input').value);
-            if(val === estoque[itemAtual]) {
-                alert("✅ Sucesso no SAP!");
-                document.getElementById('modal').style.display = 'none';
-            } else {
-                alert("🚨 Divergência! Verifique com o Coletor.");
-            }
-        }
-
-        // LÓGICA DO COLETOR
+        // Lógica do Coletor
         let buffer = "";
         function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
         function limparPad() { buffer = ""; document.getElementById('display-pad').innerText = "0"; }
         function calcularPad() { try { buffer = eval(buffer).toString(); document.getElementById('display-pad').innerText = buffer; } catch { limparPad(); } }
+
+        // Simulação de Pedidos
+        setInterval(() => {
+            const itens = ["Óculos", "Cozinha", "Papelaria"];
+            const item = itens[Math.floor(Math.random()*3)];
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `<span><b>[TIME ${time}]</b> Item: ${item}</span> <button style="background:var(--blue); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">CONFERIR</button>`;
+            document.getElementById('pedidos').prepend(div);
+        }, 10000);
     </script>
 </body>
 </html>
