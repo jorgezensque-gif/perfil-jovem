@@ -8,18 +8,17 @@
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; }
+        /* Sidebar Estática para evitar travamentos */
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
         .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
         
         .estoque-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid var(--gold); }
-        .auditoria-box { background: white; color: #333; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .erro-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.8em; }
+        .auditoria-box { background: white; color: #333; padding: 15px; border-radius: 8px; margin-top: 10px; min-height: 80px; }
         
         .main { flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .monitor-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .full-width { grid-column: span 2; }
-        .kpi-big { font-size: 3em; font-weight: bold; color: var(--dark); margin: 10px 0; }
-        canvas { max-height: 250px !important; }
+        canvas { max-height: 250px !important; width: 100% !important; }
     </style>
 </head>
 <body>
@@ -27,16 +26,16 @@
     <div class="sidebar">
         <div class="user-info">
             <small>SVP OPERACIONAL V4.0</small>
-            <h2 id="u-nome" style="margin:5px 0">JORGE_ZENSQUE</h2>
+            <h2 style="margin:5px 0">JORGE_ZENSQUE</h2>
             <span style="color:var(--gold); font-size:0.8em; font-weight:bold;">ACESSO: GESTÃO MASTER</span>
         </div>
 
         <div class="estoque-box">
             <strong style="color:var(--gold); font-size:0.9em;">📦 ESTOQUE (VALORES SAP)</strong>
             <div id="lista-estoque" style="font-size:0.85em; margin-top:10px; font-family: monospace;">
-                <div>Óculos: 500</div>
-                <div>Cozinha: 300</div>
-                <div>Papelaria: 600</div>
+                <div style="display:flex; justify-content:space-between;"><span>Óculos:</span><b>500</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Cozinha:</span><b>300</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Papelaria:</span><b>600</b></div>
             </div>
         </div>
 
@@ -44,7 +43,7 @@
         
         <div class="auditoria-box">
             <strong style="color:var(--alta); font-size:0.8em;">🚨 DESBLOQUEIO DE LOTES</strong>
-            <div id="lista-erros-gestor" style="margin-top:10px;">
+            <div id="lista-erros-gestor" style="margin-top:10px; font-size: 0.8em;">
                 <small>Nenhum lote travado.</small>
             </div>
         </div>
@@ -58,45 +57,48 @@
 
         <div class="monitor-card">
             <h3>TOTAL REALIZADO</h3>
-            <div class="kpi-big" id="kpi-total">0</div>
+            <div id="kpi-total" style="font-size: 3em; font-weight: bold; color: var(--dark);">0</div>
             <small>Meta Semanal: 50</small>
         </div>
 
         <div class="monitor-card">
             <h3>STATUS DA LINHA</h3>
-            <div style="font-size: 1.5em; font-weight: bold; color: var(--green);">● EM OPERAÇÃO</div>
+            <div style="font-size: 1.5em; font-weight: bold; color: var(--green); margin-top: 10px;">● EM OPERAÇÃO</div>
         </div>
     </div>
 
     <script>
-        let processados = parseInt(localStorage.getItem('svp_score')) || 0;
-        let erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
-
-        function atualizarPainel() {
-            document.getElementById('kpi-total').innerText = processados;
-            const container = document.getElementById('lista-erros-gestor');
+        // Lógica de Sincronização
+        function atualizarDados() {
+            const score = localStorage.getItem('svp_score') || 0;
+            const erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
             
-            if(erros.length === 0) {
-                container.innerHTML = "<small>Nenhum lote travado.</small>";
-            } else {
+            document.getElementById('kpi-total').innerText = score;
+            
+            const container = document.getElementById('lista-erros-gestor');
+            if(erros.length > 0) {
                 container.innerHTML = erros.map((err, i) => `
-                    <div class="erro-item">
-                        <span><b>${err.item}</b></span>
-                        <button onclick="liberarLote(${i})" style="background:var(--green); color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">OK</button>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; align-items:center;">
+                        <span>${err.item}</span>
+                        <button onclick="liberar(${i})" style="background:var(--green); color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer;">OK</button>
                     </div>
                 `).join('');
+            } else {
+                container.innerHTML = "<small>Nenhum lote travado.</small>";
             }
         }
 
-        function liberarLote(index) {
-            erros.splice(index, 1);
-            processados++;
-            localStorage.setItem('svp_score', processados);
+        function liberar(idx) {
+            let erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
+            let score = parseInt(localStorage.getItem('svp_score')) || 0;
+            erros.splice(idx, 1);
+            score++;
             localStorage.setItem('svp_errors', JSON.stringify(erros));
-            atualizarPainel();
+            localStorage.setItem('svp_score', score);
+            atualizarDados();
         }
 
-        // GRÁFICO (PRESERVADO)
+        // GRÁFICO PRESERVADO (Conforme solicitado)
         const ctx = document.getElementById('graficoProducao').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -111,10 +113,15 @@
                     tension: 0.4
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                animation: false // Desligado para evitar "congelamento" visual ao atualizar
+            }
         });
 
-        atualizarPainel();
+        setInterval(atualizarDados, 2000);
+        atualizarDados();
     </script>
 </body>
 </html>
