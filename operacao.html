@@ -2,151 +2,131 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Operacional Palmas</title>
+    <title>SVP 4.0 - Palmas (Gestão Restrita)</title>
     <style>
-        /* RESET E CORES BASE */
-        :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
+        :root { --dark: #232f3e; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; --purple: #9b59b6; }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f0f2f5; overflow: hidden; }
 
-        /* BARRA LATERAL (SIDEBAR) */
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; height: 100%; }
-        .user-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
+        /* SIDEBAR */
+        .sidebar { width: 320px; background: #2c3e50; color: white; display: flex; flex-direction: column; padding: 15px; border-right: 4px solid #1a252f; }
+        .user-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 15px; }
         
-        /* BOTÃO STOP */
-        .btn-stop { width: 100%; padding: 15px; background: red; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; font-size: 1.2em; }
-        .btn-stop.parado { background: #555 !important; }
-
-        /* PAINEL DE ESTOQUE SAP */
-        .estoque-panel { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9em; border: 1px solid rgba(255,255,255,0.1); }
-        .estoque-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        /* ESTOQUE SAP (CORRIGIDO) */
+        .sap-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; }
+        .sap-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
         /* CALCULADORA */
-        .calc-display { background: black; color: #27ae60; padding: 15px; text-align: right; font-family: monospace; font-size: 1.8em; border-radius: 5px; margin-bottom: 10px; border: 1px solid #444; }
-        .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .calc-btn { padding: 18px; border: none; border-radius: 5px; background: #34495e; color: white; font-size: 1.2em; font-weight: bold; cursor: pointer; }
+        .calc { margin-top: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
+        .screen { background: #000; color: var(--green); text-align: right; padding: 10px; font-size: 1.5em; font-family: monospace; border-radius: 4px; margin-bottom: 8px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .btn-c { padding: 15px; border: none; border-radius: 4px; background: #3e5871; color: white; font-weight: bold; cursor: pointer; }
 
-        /* ÁREA PRINCIPAL */
-        .main { flex: 1; display: flex; flex-direction: column; height: 100%; }
-        .top-bar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-bottom: 3px solid var(--purple); }
-        
-        /* ALERTAS E CONTEÚDO */
-        .content { flex: 1; padding: 30px; overflow-y: auto; }
-        .alerta-bloqueio { background: var(--alta); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: center; display: none; }
-        .btn-suspender { background: black; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        /* MAIN */
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .top-nav { background: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .view { padding: 25px; overflow-y: auto; }
 
-        /* CARDS DA FILA */
-        .lote-card { background: white; padding: 20px; border-radius: 10px; border-left: 10px solid #ddd; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        /* ALERTA DE 3 DIAS */
+        .alerta-transbordo { background: var(--red); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; display: none; }
+        .btn-master { background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-master:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .lote-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 8px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <aside class="sidebar">
         <div class="user-box">
-            <small>SVP OPERACIONAL V4.0</small>
-            <h2 style="margin:5px 0">OP_01</h2>
-            <span style="color:var(--gold); font-size:0.8em; font-weight:bold;">LINHA PALMAS</span>
+            <small>SVP V4.0</small>
+            <h3 style="margin: 4px 0;" id="current-user">JORGE_ZENSQUE</h3>
+            <span id="user-role" style="color: var(--gold); font-size: 0.75em; font-weight: bold;">GESTÃO MASTER</span>
         </div>
 
-        <button id="btn-stop" class="btn-stop" onclick="toggleStop()">STOP</button>
+        <button class="btn-c" style="background:var(--red); width:100%; margin-bottom:10px;" onclick="handleStop()">STOP</button>
 
-        <div class="estoque-panel">
-            <div style="color:var(--gold); font-weight:bold; margin-bottom:10px;">📦 ESTOQUE (VALORES SAP)</div>
-            <div class="estoque-item"><span>Óculos</span> <b>500</b></div>
-            <div class="estoque-item"><span>Cozinha</span> <b>300</b></div>
-            <div class="estoque-item"><span>Papelaria</span> <b>600</b></div>
+        <div class="sap-box">
+            <b style="color:var(--gold); display:block; margin-bottom:5px;">📦 ESTOQUE SAP</b>
+            <div class="sap-row"><span>Óculos:</span> <b>500</b></div>
+            <div class="sap-row"><span>Cozinha:</span> <b>300</b></div>
+            <div class="sap-row" style="color:var(--gold)"><span>Eletrônicos:</span> <b>200</b></div>
+            <div class="sap-row"><span>Papelaria:</span> <b>600</b></div>
         </div>
 
-        <div class="calc-display" id="calc-num">0</div>
-        <div class="calc-grid">
-            <button class="calc-btn" onclick="addNum(7)">7</button>
-            <button class="calc-btn" onclick="addNum(8)">8</button>
-            <button class="calc-btn" onclick="addNum(9)">9</button>
-            <button class="calc-btn" onclick="addNum(4)">4</button>
-            <button class="calc-btn" onclick="addNum(5)">5</button>
-            <button class="calc-btn" onclick="addNum(6)">6</button>
-            <button class="calc-btn" onclick="addNum(1)">1</button>
-            <button class="calc-btn" onclick="addNum(2)">2</button>
-            <button class="calc-btn" onclick="addNum(3)">3</button>
-            <button class="calc-btn" style="background:#e74c3c" onclick="resetCalc()">C</button>
-            <button class="calc-btn" onclick="addNum(0)">0</button>
-            <button class="calc-btn" style="background:#27ae60" onclick="confirmar()">OK</button>
+        <div class="calc">
+            <div class="screen" id="scr">0</div>
+            <div class="grid">
+                <button class="btn-c" onclick="n(7)">7</button><button class="btn-c" onclick="n(8)">8</button><button class="btn-c" onclick="n(9)">9</button>
+                <button class="btn-c" onclick="n(4)">4</button><button class="btn-c" onclick="n(5)">5</button><button class="btn-c" onclick="n(6)">6</button>
+                <button class="btn-c" onclick="n(1)">1</button><button class="btn-c" onclick="n(2)">2</button><button class="btn-c" onclick="n(3)">3</button>
+                <button class="btn-c" style="background:#c0392b" onclick="c()">C</button>
+                <button class="btn-c" onclick="n(0)">0</button>
+                <button class="btn-c" style="background:var(--green)" onclick="ok()">OK</button>
+            </div>
         </div>
-    </div>
+    </aside>
 
-    <div class="main">
-        <header class="top-bar">
-            <div id="status-linha" style="color: var(--green); font-weight: bold; font-size: 1.1em;">● EM OPERAÇÃO</div>
+    <main class="main">
+        <header class="top-nav">
+            <div id="st" style="color: var(--green); font-weight: bold;">● EM OPERAÇÃO</div>
             <div style="text-align: right;">
-                <span style="color: #777; font-weight: bold; font-size: 0.9em;">REALIZADO:</span>
-                <span id="kpi-total" style="font-size: 2.2em; font-weight: bold; color: var(--purple); margin: 0 10px;">0</span>
-                <span style="background:#eee; padding:5px 12px; border-radius:15px; font-size:0.8em; font-weight: bold;">META: 40/DIA</span>
+                <span id="prod" style="font-size: 1.8em; font-weight: bold; color: var(--purple);">0</span>
+                <span style="margin-left:10px; background:#eee; padding:5px; border-radius:5px; font-size:0.7em;">META: 40</span>
             </div>
         </header>
 
-        <div class="content">
-            <div id="msg-trava" class="alerta-bloqueio">
-                <h1 style="margin:0">⚠️ TRANSBORDAMENTO (3 DIAS)</h1>
-                <p>Acúmulo crítico detectado. Ação do Gestor necessária.</p>
-                <button class="btn-suspender" onclick="suspenderProducao()">⛔ PARAR DISPARO DE PRODUÇÃO</button>
+        <div class="view">
+            <div id="alerta" class="alerta-transbordo">
+                <h2 style="margin:0">⚠️ TRANSBORDAMENTO (3 DIAS)</h2>
+                <p>Apenas o **Gestor Master** pode autorizar a parada do disparo SAP.</p>
+                <button id="btn-lock" class="btn-master" onclick="solicitarTrava()">
+                    ⛔ PARAR DISPARO DE PRODUÇÃO
+                </button>
             </div>
 
-            <h2 style="color: var(--dark); margin-bottom: 20px;">📋 FILA DE PRODUÇÃO ATIVA</h2>
-            <div id="lista-lotes">
-                </div>
+            <h3>📋 FILA ATIVA</h3>
+            <div id="lista"></div>
         </div>
-    </div>
+    </main>
 
     <script>
-        let ativo = true;
-        let acumuloDias = 3; // Simula a regra dos 3 dias
+        const USUARIO_LOGADO = "JORGE_ZENSQUE";
+        const PERFIL = "GESTÃO MASTER";
+        let diasAtraso = 3;
 
-        function toggleStop() {
-            ativo = !ativo;
-            const btn = document.getElementById('btn-stop');
-            btn.innerText = ativo ? "STOP" : "RETOMAR";
-            btn.classList.toggle('parado', !ativo);
-            document.getElementById('status-linha').innerText = ativo ? "● EM OPERAÇÃO" : "■ LINHA PARADA";
-            document.getElementById('status-linha').style.color = ativo ? "green" : "red";
-        }
-
-        function suspenderProducao() {
-            alert("ALERTA: Novos disparos de produção suspensos via SAP.");
-            document.getElementById('status-linha').innerText = "🛑 DISPARO BLOQUEADO";
-            document.getElementById('status-linha').style.color = "orange";
-        }
-
-        function addNum(n) { if(ativo) { let d = document.getElementById('calc-num'); d.innerText = d.innerText === "0" ? n : d.innerText + n; } }
-        function resetCalc() { document.getElementById('calc-num').innerText = "0"; }
-        
-        function confirmar() {
-            if(!ativo) return;
-            let val = parseInt(document.getElementById('calc-num').innerText);
-            if(val > 0) {
-                localStorage.setItem('svp_score', parseInt(localStorage.getItem('svp_score') || 0) + 1);
-                updateUI();
-                resetCalc();
+        function solicitarTrava() {
+            // VALIDAÇÃO DE IDENTIDADE
+            if (USUARIO_LOGADO === "JORGE_ZENSQUE" && PERFIL === "GESTÃO MASTER") {
+                document.getElementById('st').innerText = "🛑 DISPARO BLOQUEADO POR JORGE";
+                document.getElementById('st').style.color = "orange";
+                document.getElementById('btn-lock').innerText = "✅ BLOQUEIO ATIVADO NO SAP";
+                document.getElementById('btn-lock').style.background = "green";
+                document.getElementById('btn-lock').disabled = true;
+            } else {
+                alert("ACESSO NEGADO: Apenas Jorge Zensque tem autoridade para travar o disparo.");
             }
         }
 
-        function updateUI() {
-            document.getElementById('kpi-total').innerText = localStorage.getItem('svp_score') || 0;
-            if(acumuloDias >= 3) document.getElementById('msg-trava').style.display = "block";
-            
-            // Renderiza lotes de exemplo
-            document.getElementById('lista-lotes').innerHTML = `
-                <div class="lote-card" style="border-left-color: red;">
-                    <div><strong>LOTE: Óculos</strong><br><small>ACUMULADO: 3 DIAS</small></div>
-                    <span style="color: #e74c3c; font-weight:bold;">PENDENTE</span>
-                </div>
-                <div class="lote-card" style="border-left-color: var(--purple);">
-                    <div><strong>LOTE: Papelaria</strong><br><small>ENTRADA: HOJE</small></div>
-                    <span style="color: #999;">AGUARDANDO</span>
+        function n(v) { const s = document.getElementById('scr'); s.innerText = s.innerText === "0" ? v : s.innerText + v; }
+        function c() { document.getElementById('scr').innerText = "0"; }
+        function ok() { 
+            let p = parseInt(localStorage.getItem('p') || 0);
+            localStorage.setItem('p', p + 1);
+            ui(); c();
+        }
+
+        function ui() {
+            document.getElementById('prod').innerText = localStorage.getItem('p') || 0;
+            if(diasAtraso >= 3) document.getElementById('alerta').style.display = "block";
+            document.getElementById('lista').innerHTML = `
+                <div class="lote-card" style="border-left-color: var(--gold);">
+                    <div><b>LOTE: Eletrônicos</b><br><small>3 DIAS DE ACÚMULO</small></div>
+                    <span style="color:red; font-weight:bold;">PENDENTE</span>
                 </div>
             `;
         }
-
-        window.onload = updateUI;
+        window.onload = ui;
     </script>
 </body>
 </html>
