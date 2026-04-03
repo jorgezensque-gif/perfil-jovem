@@ -4,37 +4,68 @@
     <meta charset="UTF-8">
     <title>SVP - Sistema de Gestão Palmas</title>
     <style>
-        :root { --blue: #2980b9; --dark: #2c3e50; --gold: #f1c40f; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 300px; background: var(--dark); color: white; padding: 20px; border-right: 5px solid #34495e; }
-        .main { flex: 1; padding: 25px; overflow-y: auto; }
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--blue); display: flex; justify-content: space-between; align-items: center; }
+        :root { --blue: #2980b9; --dark: #2c3e50; --gold: #f1c40f; --light: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* ESTILO DO COLETOR SVP-PAD */
-        #svp-pad { position: fixed; bottom: 20px; right: 20px; width: 200px; background: #2c3e50; border: 2px solid var(--gold); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #display-pad { background: #1e272e; color: #2ecc71; padding: 10px; text-align: right; font-size: 1.2em; border-radius: 5px; margin-bottom: 10px; font-family: monospace; }
-        .grid-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .grid-buttons button { padding: 10px; border: none; border-radius: 4px; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
+        /* Sidebar */
+        .sidebar { width: 300px; background: var(--dark); color: white; padding: 20px; border-right: 5px solid #34495e; display: flex; flex-direction: column; }
+        .user-badge { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--gold); }
+        
+        /* Tabela de Estoque */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85em; }
+        th { text-align: left; color: var(--gold); padding: 8px; border-bottom: 1px solid #455a64; }
+        td { padding: 8px; border-bottom: 1px solid #34495e; }
+
+        /* Área Principal */
+        .main { flex: 1; padding: 25px; overflow-y: auto; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--blue); box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .card:hover { transform: translateX(5px); }
+        
+        /* Coletor SVP-PAD */
+        #svp-pad { position: fixed; bottom: 20px; right: 20px; width: 220px; background: #2c3e50; border: 2px solid var(--gold); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; }
+        #display-pad { background: #1e272e; color: #2ecc71; padding: 10px; text-align: right; font-size: 1.5em; border-radius: 5px; margin-bottom: 10px; font-family: 'Courier New', monospace; min-height: 1.2em; }
+        .grid-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .grid-buttons button { padding: 12px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; font-size: 1.1em; }
         .grid-buttons button:active { background: var(--gold); color: black; }
+        .btn-action { background: #2980b9; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h3 id="u-nome">--</h3>
-        <p id="u-time" style="color:var(--gold)">Célula: --</p>
-        <hr>
-        <h4>ESTOQUE ATUAL</h4>
-        <div id="estoque-lista" style="font-size: 0.9em;"></div>
+        <div class="user-badge">
+            <small>UNIDADE: PALMAS - TO</small>
+            <h3 id="u-nome" style="margin: 5px 0;">--</h3>
+            <span id="u-time" style="color:var(--gold); font-weight: bold;">TIME: --</span>
+        </div>
+        
+        <h4 style="color: var(--gold); margin-bottom: 5px;">ESTOQUE EM TEMPO REAL</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ITEM</th>
+                    <th>S. INICIAL</th>
+                    <th>SALDO</th>
+                </tr>
+            </thead>
+            <tbody id="estoque-corpo">
+                </tbody>
+        </table>
+
+        <div style="margin-top: auto; font-size: 0.7em; opacity: 0.6;">
+            Responsável: Jorge Zensque [2026]<br>
+            Compliance: Projeto Pescar
+        </div>
     </div>
 
     <div class="main">
-        <h2>📥 Fila de Pedidos Disponíveis</h2>
-        <div id="pedidos"></div>
+        <h2 style="color: var(--dark);">📥 FILA DE PEDIDOS DISPONÍVEIS</h2>
+        <div id="pedidos">
+            </div>
     </div>
 
     <div id="svp-pad">
-        <div style="font-size: 0.7em; margin-bottom: 5px; color: var(--gold);">AUDITORIA LOGÍSTICA V4.0</div>
+        <div style="font-size: 0.7em; margin-bottom: 5px; color: var(--gold); letter-spacing: 1px;">AUDITORIA LOGÍSTICA V4.0</div>
         <div id="display-pad">0</div>
         <div class="grid-buttons">
             <button onclick="teclar(7)">7</button><button onclick="teclar(8)">8</button><button onclick="teclar(9)">9</button>
@@ -45,27 +76,75 @@
     </div>
 
     <script>
-        const user = localStorage.getItem('svp_user');
-        const time = localStorage.getItem('svp_time');
+        // Recuperar dados do Login
+        const user = localStorage.getItem('svp_user') || 'OPERADOR';
+        const time = localStorage.getItem('svp_time') || '1';
 
-        document.getElementById('u-nome').innerText = user || 'OPERADOR';
-        document.getElementById('u-time').innerText = "Célula: " + (time || '--');
+        document.getElementById('u-nome').innerText = user;
+        document.getElementById('u-time').innerText = "TIME: " + time;
 
-        // Lógica do Coletor
+        // Dados de Estoque
+        const estoque = [
+            { item: "Óculos", inicial: 500, saldo: 500 },
+            { item: "Cozinha", inicial: 300, saldo: 297 },
+            { item: "Eletrônicos", inicial: 200, saldo: 200 },
+            { item: "Papelaria", inicial: 600, saldo: 597 }
+        ];
+
+        function atualizarEstoque() {
+            const corpo = document.getElementById('estoque-corpo');
+            corpo.innerHTML = estoque.map(i => `
+                <tr>
+                    <td>${i.item}</td>
+                    <td>${i.inicial}</td>
+                    <td style="color: ${i.saldo < i.inicial ? '#ff7675' : '#55efc4'}">${i.saldo}</td>
+                </tr>
+            `).join('');
+        }
+        atualizarEstoque();
+
+        // Lógica do Coletor (SVP-PAD)
         let buffer = "";
-        function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
-        function limparPad() { buffer = ""; document.getElementById('display-pad').innerText = "0"; }
-        function calcularPad() { try { buffer = eval(buffer).toString(); document.getElementById('display-pad').innerText = buffer; } catch { limparPad(); } }
+        function teclar(n) { 
+            buffer += n; 
+            document.getElementById('display-pad').innerText = buffer; 
+        }
+        function limparPad() { 
+            buffer = ""; 
+            document.getElementById('display-pad').innerText = "0"; 
+        }
+        function calcularPad() { 
+            try { 
+                // Permite cálculos simples de conferência
+                buffer = eval(buffer).toString(); 
+                document.getElementById('display-pad').innerText = buffer; 
+            } catch { limparPad(); } 
+        }
 
-        // Simulação de Pedidos
-        setInterval(() => {
-            const itens = ["Óculos", "Cozinha", "Papelaria"];
-            const item = itens[Math.floor(Math.random()*3)];
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `<span><b>[TIME ${time}]</b> Item: ${item}</span> <button style="background:var(--blue); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">CONFERIR</button>`;
-            document.getElementById('pedidos').prepend(div);
-        }, 10000);
+        // Gerador de Pedidos (Simulação)
+        function criarPedido() {
+            const itens = ["Óculos", "Cozinha", "Eletrônicos", "Papelaria"];
+            const itemSortido = itens[Math.floor(Math.random() * itens.length)];
+            const container = document.getElementById('pedidos');
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <span><b>[TIME ${time}]</b> Item: ${itemSortido}</span>
+                <button class="btn-action" onclick="this.parentElement.style.opacity='0.3'; this.innerText='CONFERIDO'">CONFERIR</button>
+            `;
+            
+            container.prepend(card);
+            
+            // Limita a 6 cards na tela para não poluir
+            if (container.children.length > 6) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        // Iniciar com alguns pedidos e gerar novos a cada 8 segundos
+        for(let i=0; i<3; i++) criarPedido();
+        setInterval(criarPedido, 8000);
     </script>
 </body>
 </html>
