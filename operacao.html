@@ -7,26 +7,30 @@
         :root { --dark: #232f3e; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f0f2f5; }
 
-        /* SIDEBAR: ESTOQUE E CALCULADORA */
+        /* SIDEBAR OPERACIONAL */
         .sidebar { width: 340px; background: #2c3e50; color: white; display: flex; flex-direction: column; padding: 15px; border-right: 4px solid #1a252f; }
         .user-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 15px; }
         
-        .btn-pause { width: 100%; padding: 15px; border: none; border-radius: 6px; background: var(--red); color: white; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-bottom: 10px; }
-        .btn-retomar { background: #555; }
+        /* BOTÃO DE PAUSA INDIVIDUAL */
+        .btn-pause { width: 100%; padding: 15px; border: none; border-radius: 6px; background: var(--red); color: white; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-bottom: 15px; }
+        .btn-retomar { background: var(--green); }
 
-        .sap-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; }
-        .sap-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sap-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .sap-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9em; }
 
-        .calc { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: auto; }
-        .screen { background: #000; color: var(--green); text-align: right; padding: 10px; font-size: 1.8em; font-family: monospace; border-radius: 4px; margin-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .b-calc { padding: 15px; border: none; border-radius: 4px; background: #3e5871; color: white; font-weight: bold; cursor: pointer; }
+        /* CALCULADORA DE LANÇAMENTO */
+        .calc { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-top: auto; }
+        .screen { background: #000; color: var(--green); text-align: right; padding: 12px; font-size: 2em; font-family: monospace; border-radius: 4px; margin-bottom: 10px; border: 1px solid #444; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .b-calc { padding: 15px; border: none; border-radius: 4px; background: #3e5871; color: white; font-weight: bold; cursor: pointer; font-size: 1.1em; }
 
-        /* ÁREA DE PRODUÇÃO E META */
-        .main { flex: 1; padding: 30px; overflow-y: auto; text-align: center; }
-        .meta-box { display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: 40px; }
-        .prod-atual { font-size: 8em; font-weight: bold; color: #2c3e50; margin: 20px 0; }
-        .status-tag { font-weight: bold; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; }
+        /* ÁREA DE META E FILA */
+        .main { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
+        .header-op { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+        .prod-atual { font-size: 9em; font-weight: bold; color: #2c3e50; line-height: 1; margin: 10px 0; }
+        .meta-tag { background: #fff; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-weight: bold; }
+        
+        .lote-card { background: white; padding: 25px; border-radius: 12px; border-left: 12px solid var(--gold); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
@@ -35,85 +39,97 @@
         <div class="user-box">
             <small>SVP OPERACIONAL V4.0</small>
             <h2 style="margin: 5px 0;">OP_01</h2>
-            <span style="color: var(--gold); font-size: 0.8em;">LINHA EM PALMAS</span>
+            <span style="color: var(--gold); font-size: 0.8em; font-weight: bold;">UNIDADE PALMAS</span>
         </div>
 
-        <button id="btnToggle" class="btn-pause" onclick="toggleLinha()">STOP</button>
+        <button id="btnPausa" class="btn-pause" onclick="pausar()">STOP</button>
 
         <div class="sap-box">
-            <b style="color:var(--gold);">📦 ESTOQUE (VALORES SAP)</b>
+            <b style="color:var(--gold); font-size: 0.8em;">📦 ESTOQUE SAP</b>
             <div class="sap-row"><span>Óculos:</span> <b>500</b></div>
             <div class="sap-row"><span>Cozinha:</span> <b>300</b></div>
+            <div class="sap-row"><span>Eletrônicos:</span> <b>200</b></div>
             <div class="sap-row"><span>Papelaria:</span> <b>600</b></div>
         </div>
 
         <div class="calc">
-            <div class="screen" id="calcScreen">0</div>
+            <div class="screen" id="visor">0</div>
             <div class="grid">
-                <button class="b-calc" onclick="addNum('7')">7</button><button class="b-calc" onclick="addNum('8')">8</button><button class="b-calc" onclick="addNum('9')">9</button>
-                <button class="b-calc" onclick="addNum('4')">4</button><button class="b-calc" onclick="addNum('5')">5</button><button class="b-calc" onclick="addNum('6')">6</button>
-                <button class="b-calc" onclick="addNum('1')">1</button><button class="b-calc" onclick="addNum('2')">2</button><button class="b-calc" onclick="addNum('3')">3</button>
-                <button class="b-calc" style="background:var(--red)" onclick="clearCalc()">C</button>
-                <button class="b-calc" onclick="addNum('0')">0</button>
-                <button class="b-calc" style="background:var(--green)" onclick="contar()">OK</button>
+                <button class="b-calc" onclick="digitar('7')">7</button>
+                <button class="b-calc" onclick="digitar('8')">8</button>
+                <button class="b-calc" onclick="digitar('9')">9</button>
+                <button class="b-calc" onclick="digitar('4')">4</button>
+                <button class="b-calc" onclick="digitar('5')">5</button>
+                <button class="b-calc" onclick="digitar('6')">6</button>
+                <button class="b-calc" onclick="digitar('1')">1</button>
+                <button class="b-calc" onclick="digitar('2')">2</button>
+                <button class="b-calc" onclick="digitar('3')">3</button>
+                <button class="b-calc" style="background:var(--red)" onclick="limpar()">C</button>
+                <button class="b-calc" onclick="digitar('0')">0</button>
+                <button class="b-calc" style="background:var(--green)" onclick="confirmar()">OK</button>
             </div>
         </div>
     </aside>
 
     <main class="main">
-        <div class="meta-box">
-            <div id="msgStatus" style="color: var(--green); font-weight: bold;">● EM OPERAÇÃO</div>
-            <div style="background: #eee; padding: 5px 15px; border-radius: 5px;">
-                <b>META: 40/DIA</b>
-            </div>
+        <div class="header-op">
+            <div id="statusOp" style="color: var(--green); font-weight: bold; font-size: 1.2em;">● EM OPERAÇÃO</div>
+            <div class="meta-tag">META: 40/DIA</div>
         </div>
 
-        <div style="color: #888; font-weight: bold;">TOTAL REALIZADO</div>
-        <div class="prod-atual" id="contador">0</div>
-        
-        <div id="linhaMsg" style="color: var(--red); font-weight: bold; visibility: hidden;">■ LINHA PARADA</div>
+        <div style="text-align: center;">
+            <small style="font-weight: bold; color: #888; letter-spacing: 2px;">TOTAL REALIZADO</small>
+            <div class="prod-atual" id="cont">0</div>
+            <h2 id="msgPausa" style="color: var(--red); display: none;">⏸️ LINHA EM PAUSA (ÁGUA/ALMOÇO)</h2>
+        </div>
 
-        <div style="margin-top: 50px; text-align: left;">
-            <h3>📋 FILA DE PRODUÇÃO ATIVA</h3>
-            <div style="background: white; padding: 20px; border-radius: 10px; border-left: 10px solid var(--gold); display: flex; justify-content: space-between;">
-                <b>LOTE: Eletrônicos</b>
-                <span style="color: var(--red); font-weight: bold;">PENDENTE</span>
+        <div style="margin-top: 50px;">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 FILA DE PRODUÇÃO</h3>
+            <div class="lote-card">
+                <div>
+                    <b style="font-size: 1.2em;">LOTE: Eletrônicos</b><br>
+                    <small style="color: #777;">Ref: 2026-E1 | ACUMULADO: 3 DIAS</small>
+                </div>
+                <b style="color: var(--red); font-size: 1.1em;">PENDENTE</b>
             </div>
         </div>
     </main>
 
     <script>
-        let prod = 0;
-        function addNum(n) { 
-            const s = document.getElementById('calcScreen');
-            s.innerText = s.innerText === '0' ? n : s.innerText + n;
+        let total = 0;
+        function digitar(n) { 
+            const v = document.getElementById('visor');
+            v.innerText = v.innerText === '0' ? n : v.innerText + n;
         }
-        function clearCalc() { document.getElementById('calcScreen').innerText = '0'; }
+        function limpar() { document.getElementById('visor').innerText = '0'; }
         
-        function contar() {
-            prod++;
-            document.getElementById('contador').innerText = prod;
-            clearCalc();
-            if(prod >= 40) alert("Meta atingida!");
+        function confirmar() {
+            total++;
+            document.getElementById('cont').innerText = total;
+            limpar();
+            if(total >= 40) { alert("META ATINGIDA! Bom trabalho."); }
         }
 
-        function toggleLinha() {
-            const btn = document.getElementById('btnToggle');
-            const msg = document.getElementById('linhaMsg');
-            const st = document.getElementById('msgStatus');
+        function pausar() {
+            const btn = document.getElementById('btnPausa');
+            const msg = document.getElementById('msgPausa');
+            const st = document.getElementById('statusOp');
+            const cont = document.getElementById('cont');
 
             if(btn.innerText === "STOP") {
                 btn.innerText = "RETOMAR";
                 btn.className = "btn-pause btn-retomar";
-                msg.style.visibility = "visible";
-                st.style.color = "red";
+                msg.style.display = "block";
+                cont.style.opacity = "0.3";
                 st.innerText = "○ PAUSADO";
+                st.style.color = "var(--red)";
             } else {
                 btn.innerText = "STOP";
                 btn.className = "btn-pause";
-                msg.style.visibility = "hidden";
-                st.style.color = "var(--green)";
+                msg.style.display = "none";
+                cont.style.opacity = "1";
                 st.innerText = "● EM OPERAÇÃO";
+                st.style.color = "var(--green)";
             }
         }
     </script>
