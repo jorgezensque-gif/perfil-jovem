@@ -10,11 +10,9 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
         .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 15px; }
         
-        /* Painéis de Controle (Iniciam escondidos por segurança) */
         .admin-panel, #area-auditoria-master { 
             display: none; 
             background: #1e272e; padding: 15px; border-radius: 8px; border: 1px solid var(--gold); margin-bottom: 15px; 
@@ -24,7 +22,6 @@
 
         .btn-lider { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
         
-        /* Cards e Prioridades */
         .main { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
         .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 10px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; }
         
@@ -36,12 +33,18 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
         .card.concluido { opacity: 0.4; pointer-events: none; border-left-color: var(--green); }
         
-        /* Feedback de Erro */
         .card.erro-validacao { border-left: 20px solid var(--alta) !important; background: #fff5f5; animation: shake 0.5s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
 
-        /* Calculadora */
         #svp-pad { position: absolute; top: 150px; right: 30px; width: 220px; background: var(--dark); border: 2px solid var(--gold); border-radius: 12px; padding: 15px; color: white; z-index: 1000; cursor: grab; }
+        
+        /* Estilo do botão de Logout */
+        .btn-logout { 
+            margin-top: 12px; width: 100%; padding: 8px; background: transparent; 
+            border: 1px solid var(--alta); color: var(--alta); cursor: pointer; 
+            border-radius: 4px; font-weight: bold; font-size: 0.75em; transition: 0.3s;
+        }
+        .btn-logout:hover { background: var(--alta); color: white; }
     </style>
 </head>
 <body>
@@ -52,6 +55,7 @@
             <h3 id="u-nome" style="margin:5px 0">CARREGANDO...</h3>
             <span id="u-time" style="color:var(--gold); font-weight: bold;">--</span>
             <br><small id="u-nivel" style="opacity: 0.7;"></small>
+            <button class="btn-logout" onclick="fazerLogout()">🚪 ENCERRAR SESSÃO</button>
         </div>
 
         <div class="admin-panel" id="panel-ceo">
@@ -110,13 +114,44 @@
     </div>
 
     <script>
+        // --- 1. CONFIGURAÇÕES DE SEGURANÇA ---
         const gestoresAutorizados = ['jorge_zensque', 'diretor', 'gerente'];
         const usuarioLogado = localStorage.getItem('svp_user') || 'visitante';
         const time = localStorage.getItem('svp_time') || '1';
         
+        // Timer de Inatividade (30 Minutos)
+        let tempoInatividade;
+        const TRINTA_MINUTOS = 30 * 60 * 1000;
+
+        function resetarTimer() {
+            clearTimeout(tempoInatividade);
+            tempoInatividade = setTimeout(logoutAutomatico, TRINTA_MINUTOS);
+        }
+
+        // Eventos que resetam o cronômetro
+        window.onmousemove = resetarTimer;
+        window.onkeydown = resetarTimer;
+        window.onclick = resetarTimer;
+
+        function logoutAutomatico() {
+            alert("⚠️ SESSÃO EXPIRADA: O sistema foi deslogado por inatividade.");
+            executarSaida();
+        }
+
+        function fazerLogout() {
+            if (confirm("Deseja encerrar sua sessão atual?")) {
+                executarSaida();
+            }
+        }
+
+        function executarSaida() {
+            localStorage.clear();
+            window.location.href = "index.html"; 
+        }
+
+        // --- 2. LÓGICA DO SISTEMA ---
         let freeze = false;
         let processados = 0;
-        let atrasos = 0;
         let filaRetrabalho = [];
         const metaSemanal = 50;
 
@@ -138,22 +173,22 @@
             if(gestoresAutorizados.includes(usuarioLogado.toLowerCase())) {
                 painel.style.display = 'block';
                 areaMaster.style.display = 'block';
-                labelNivel.innerText = "ACESSO: GESTÃO";
+                labelNivel.innerText = "ACESSO: GESTÃO MASTER";
             } else {
                 labelNivel.innerText = "ACESSO: OPERACIONAL";
             }
+            resetarTimer();
         }
 
         function darBaixa(btn, nomeItem) {
             const valorDigitado = parseInt(document.getElementById('display-pad').innerText);
             const itemObj = estoque.find(i => i.item === nomeItem);
 
-            // VALIDAÇÃO DE SEGURANÇA: Se errar, o lote é sequestrado
             if (valorDigitado !== itemObj.saldo) {
                 filaRetrabalho.push({ item: nomeItem, operador: usuarioLogado.toUpperCase(), hora: new Date().toLocaleTimeString() });
-                processados = Math.max(0, processados - 5); // Penalidade pesada por erro
+                processados = Math.max(0, processados - 5); 
                 btn.parentElement.remove(); 
-                alert("ERRO DE CONFERÊNCIA! Lote bloqueado para auditoria do Jorge.");
+                alert("🚨 BLOQUEIO: Valor incorreto! Lote enviado para Auditoria.");
                 renderizarAuditoria();
                 atualizarTelas();
                 return;
@@ -180,7 +215,7 @@
 
         function liberarLote(index) {
             filaRetrabalho.splice(index, 1);
-            processados += 1; // Devolve o ponto após a correção do gestor
+            processados += 1; 
             renderizarAuditoria();
             atualizarTelas();
         }
@@ -218,7 +253,6 @@
         function toggleFreeze() { freeze = !freeze; const btn = document.getElementById('btn-freeze'); btn.innerText = freeze ? "LIBERAR" : "CONGELAR"; btn.style.background = freeze ? "var(--green)" : "var(--alta)"; }
         function gerarPedidoForçado() { if(!freeze) for(let i=0; i<3; i++) gerarPedido(); }
         
-        // Calculadora Draggable
         const pad = document.getElementById("svp-pad");
         let isDragging=false, px=0, py=0;
         pad.onmousedown = (e) => { isDragging=true; px=e.clientX-pad.offsetLeft; py=e.clientY-pad.offsetTop; };
