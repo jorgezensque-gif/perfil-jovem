@@ -2,71 +2,95 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP - Sistema de Gestão Palmas</title>
+    <title>SVP 4.0 - Gestão de Prioridades Palmas</title>
     <style>
-        :root { --blue: #2980b9; --dark: #2c3e50; --gold: #f1c40f; --light: #f4f7f6; --green: #27ae60; }
+        :root { 
+            --baixa: #ecf0f1; --normal: #3498db; --normal-alta: #f1c40f; --alta: #e74c3c;
+            --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --light: #f4f7f6;
+        }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* Sidebar */
-        .sidebar { width: 300px; background: var(--dark); color: white; padding: 20px; border-right: 5px solid #34495e; display: flex; flex-direction: column; z-index: 10; }
-        .user-badge { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--gold); }
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
+        .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 15px; }
         
-        /* Tabela */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85em; }
-        th { text-align: left; color: var(--gold); padding: 8px; border-bottom: 1px solid #455a64; }
-        td { padding: 8px; border-bottom: 1px solid #34495e; }
+        /* Painel CEO */
+        .admin-panel { background: #1e272e; padding: 15px; border-radius: 8px; border: 1px solid var(--gold); margin-bottom: 15px; }
+        .btn-lider { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
 
-        /* Área Principal */
+        /* Cards e Prioridades */
         .main { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--blue); box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 10px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; }
         
-        /* Estilo Conferido */
-        .card.concluido { border-left-color: var(--green); background: #e8f6f3; opacity: 0.8; }
+        .prio-baixa { border-left-color: var(--baixa); }
+        .prio-normal { border-left-color: var(--normal); }
+        .prio-normal-alta { border-left-color: var(--normal-alta); animation: pulse 2s infinite; }
+        .prio-alta { border-left-color: var(--alta); background: #fdf2f2; border-left-width: 20px; }
 
-        /* COLETOR FLUTUANTE (SVP-PAD) */
-        #svp-pad { 
-            position: absolute; top: 100px; right: 20px; width: 220px; 
-            background: #2c3e50; border: 2px solid var(--gold); border-radius: 12px; 
-            padding: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            z-index: 9999; cursor: grab; 
-        }
-        #svp-pad:active { cursor: grabbing; }
-        #display-pad { background: #1e272e; color: #2ecc71; padding: 10px; text-align: right; font-size: 1.5em; border-radius: 5px; margin-bottom: 10px; font-family: monospace; }
-        .grid-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .grid-buttons button { padding: 12px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
-        .btn-action { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .card.concluido { opacity: 0.4; pointer-events: none; border-left-color: var(--green); }
+
+        /* Status Boxes */
+        .stats-grid { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-box { flex: 1; background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .atraso-txt { color: var(--alta); font-weight: bold; font-size: 1.4em; }
+
+        #svp-pad { position: absolute; top: 150px; right: 30px; width: 220px; background: var(--dark); border: 2px solid var(--gold); border-radius: 12px; padding: 15px; color: white; z-index: 1000; cursor: grab; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="user-badge">
-            <small>UNIDADE: PALMAS - TO</small>
-            <h3 id="u-nome">--</h3>
-            <span id="u-time" style="color:var(--gold)">TIME: --</span>
+        <div class="user-info">
+            <small>SVP OPERACIONAL V4.0</small>
+            <h3 id="u-nome" style="margin:5px 0">CARREGANDO...</h3>
+            <span id="u-time" style="color:var(--gold); font-weight: bold;">--</span>
         </div>
-        <h4 style="color: var(--gold)">ESTOQUE EM TEMPO REAL</h4>
-        <table>
-            <thead><tr><th>ITEM</th><th>S. INICIAL</th><th>SALDO</th></tr></thead>
-            <tbody id="estoque-corpo"></tbody>
-        </table>
-        <div style="margin-top: auto; font-size: 0.7em; opacity: 0.6;">
-            Responsável: Jorge Zensque [2026]<br>Compliance: Projeto Pescar
+
+        <div class="admin-panel" id="panel-ceo">
+            <small style="color:var(--gold)">CONTROLE DE EMISSÃO (CEO)</small>
+            <button class="btn-lider" id="btn-freeze" style="background:var(--alta)" onclick="toggleFreeze()">CONGELAR LOTE</button>
+            <button class="btn-lider" style="background:var(--blue)" onclick="gerarPedidoForçado()">DISPARAR LOTE COMPRA</button>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+            <small>META SEMANAL</small>
+            <h3 id="meta-txt" style="margin:5px 0">0 / 50</h3>
+            <div style="height: 10px; background: #444; border-radius: 5px; overflow: hidden;">
+                <div id="meta-barra" style="height: 100%; background: var(--gold); width: 0%; transition: 0.5s;"></div>
+            </div>
+        </div>
+
+        <h4 style="color:var(--gold); margin-top: 20px;">ESTOQUE CENTRAL</h4>
+        <div id="lista-estoque" style="font-size: 0.85em;"></div>
+
+        <div style="margin-top: auto; font-size: 0.6em; opacity: 0.5;">
+            Responsável: Jorge Zensque [2026]<br>Projeto Pescar - Palmas / TO
         </div>
     </div>
 
-    <div class="main" id="area-pedidos">
-        <h2>📥 FILA DE PEDIDOS DISPONÍVEIS</h2>
-        <div id="pedidos"></div>
+    <div class="main">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <small>DEMANDA ATRASADA</small><br>
+                <span id="count-atraso" class="atraso-txt">0</span>
+            </div>
+            <div class="stat-box">
+                <small>LOTE DO DIA (PROC.)</small><br>
+                <span id="count-hoje" style="font-size: 1.4em; font-weight: bold;">0</span>
+            </div>
+        </div>
+
+        <div id="container-pedidos"></div>
 
         <div id="svp-pad">
-            <div style="font-size: 0.6em; margin-bottom: 5px; color: var(--gold); text-align: center;">VALIDADOR DE CONFERÊNCIA V4.0</div>
-            <div id="display-pad">0</div>
-            <div class="grid-buttons">
-                <button onclick="teclar(7)">7</button><button onclick="teclar(8)">8</button><button onclick="teclar(9)">9</button>
-                <button onclick="teclar(4)">4</button><button onclick="teclar(5)">5</button><button onclick="teclar(6)">6</button>
-                <button onclick="teclar(1)">1</button><button onclick="teclar(2)">2</button><button onclick="teclar(3)">3</button>
-                <button onclick="limparPad()" style="background:#e74c3c">C</button><button onclick="teclar(0)">0</button><button onclick="calcularPad()" style="background:#27ae60">=</button>
+            <div style="font-size: 0.6em; margin-bottom: 5px; color: var(--gold); text-align: center;">AUDITORIA SVP</div>
+            <div id="display-pad" style="background:#1e272e; color:#2ecc71; padding:10px; text-align:right; border-radius:5px; margin-bottom:10px; font-family: monospace;">0</div>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                <button onclick="teclar(7)" style="padding:10px">7</button><button onclick="teclar(8)" style="padding:10px">8</button><button onclick="teclar(9)" style="padding:10px">9</button>
+                <button onclick="teclar(4)" style="padding:10px">4</button><button onclick="teclar(5)" style="padding:10px">5</button><button onclick="teclar(6)" style="padding:10px">6</button>
+                <button onclick="teclar(1)" style="padding:10px">1</button><button onclick="teclar(2)" style="padding:10px">2</button><button onclick="teclar(3)" style="padding:10px">3</button>
+                <button onclick="limparPad()" style="background:var(--alta); color:white">C</button><button onclick="teclar(0)" style="padding:10px">0</button><button onclick="calcularPad()" style="background:var(--green); color:white">=</button>
             </div>
         </div>
     </div>
@@ -74,57 +98,110 @@
     <script>
         const user = localStorage.getItem('svp_user') || 'OPERADOR';
         const time = localStorage.getItem('svp_time') || '1';
-        document.getElementById('u-nome').innerText = user;
-        document.getElementById('u-time').innerText = "TIME: " + time;
+        let freeze = false;
+        let atrasos = 0;
+        let processados = 0;
+        const metaSemanal = 50;
 
-        // Estoque estático para simulação
         const estoque = [
-            { item: "Óculos", inicial: 500, saldo: 500 },
-            { item: "Cozinha", inicial: 300, saldo: 297 },
-            { item: "Eletrônicos", inicial: 200, saldo: 200 },
-            { item: "Papelaria", inicial: 600, saldo: 597 }
+            { item: "Óculos", saldo: 500 },
+            { item: "Cozinha", saldo: 300 },
+            { item: "Eletrônicos", saldo: 200 },
+            { item: "Papelaria", saldo: 600 }
         ];
 
-        function atualizarEstoque() {
-            document.getElementById('estoque-corpo').innerHTML = estoque.map(i => `
-                <tr><td>${i.item}</td><td>${i.inicial}</td><td style="color:${i.saldo < i.inicial ? '#ff7675' : '#55efc4'}">${i.saldo}</td></tr>
+        document.getElementById('u-nome').innerText = user.toUpperCase();
+        document.getElementById('u-time').innerText = "CÉLULA: " + time;
+
+        function atualizarTelas() {
+            // Atualiza Tabela Lateral
+            document.getElementById('lista-estoque').innerHTML = estoque.map(i => `
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #444; padding:5px 0">
+                    <span>${i.item}</span><b>${i.saldo}</b>
+                </div>
             `).join('');
+
+            // Atualiza Meta
+            document.getElementById('meta-txt').innerText = `${processados} / ${metaSemanal}`;
+            const perc = (processados / metaSemanal) * 100;
+            document.getElementById('meta-barra').style.width = Math.min(perc, 100) + "%";
+            document.getElementById('count-hoje').innerText = processados;
         }
-        atualizarEstoque();
 
-        // Arrastar Calculadora
+        function gerarPedido() {
+            if(freeze) return;
+
+            const prioridades = [
+                {tipo: 'baixa', classe: 'prio-baixa', txt: 'BAIXA (Pode esperar)'},
+                {tipo: 'normal', classe: 'prio-normal', txt: 'NORMAL (Dia a dia)'},
+                {tipo: 'normal-alta', classe: 'prio-normal-alta', txt: 'NORMAL ALTA (Acelerar!)'},
+                {tipo: 'alta', classe: 'prio-alta', txt: 'URGENTE (Pule tudo e faça!)'}
+            ];
+
+            const p = prioridades[Math.floor(Math.random() * prioridades.length)];
+            const itemSorteado = estoque[Math.floor(Math.random() * estoque.length)].item;
+
+            // Lógica de Demanda Atrasada
+            const pendentes = document.querySelectorAll('.card:not(.concluido)').length;
+            if(p.tipo === 'alta' && pendentes > 0) {
+                atrasos++;
+                document.getElementById('count-atraso').innerText = atrasos;
+            }
+
+            const div = document.createElement('div');
+            div.className = `card ${p.classe}`;
+            div.innerHTML = `
+                <div>
+                    <small style="color:#666">Prioridade: ${p.txt}</small><br>
+                    <span>📦 <b>PEDIDO LOTE:</b> ${itemSorteado}</span>
+                </div>
+                <button class="btn-lider" style="background:var(--dark); width:auto; padding:8px 15px" 
+                        onclick="darBaixa(this, '${itemSorteado}')">BAIXA SAP</button>
+            `;
+            document.getElementById('container-pedidos').prepend(div);
+            if(document.getElementById('container-pedidos').children.length > 8) {
+                document.getElementById('container-pedidos').removeChild(document.getElementById('container-pedidos').lastChild);
+            }
+        }
+
+        function darBaixa(btn, nomeItem) {
+            const itemObj = estoque.find(i => i.item === nomeItem);
+            if(itemObj && itemObj.saldo > 0) {
+                itemObj.saldo--;
+                processados++;
+                btn.parentElement.classList.add('concluido');
+                btn.innerText = "VENDIDO";
+                btn.disabled = true;
+                atualizarTelas();
+            }
+        }
+
+        function toggleFreeze() {
+            freeze = !freeze;
+            const btn = document.getElementById('btn-freeze');
+            btn.innerText = freeze ? "LIBERAR EMISSÃO" : "CONGELAR LOTE";
+            btn.style.background = freeze ? "var(--green)" : "var(--alta)";
+        }
+
+        function gerarPedidoForçado() { 
+            if(!freeze) for(let i=0; i<3; i++) gerarPedido(); 
+        }
+
+        // Calculadora Draggable
         const pad = document.getElementById("svp-pad");
-        let isDragging = false, px = 0, py = 0;
-        pad.onmousedown = (e) => { isDragging = true; px = e.clientX - pad.offsetLeft; py = e.clientY - pad.offsetTop; };
-        document.onmousemove = (e) => { if (isDragging) { pad.style.left = (e.clientX - px) + "px"; pad.style.top = (e.clientY - py) + "px"; } };
-        document.onmouseup = () => { isDragging = false; };
+        let isDragging=false, px=0, py=0;
+        pad.onmousedown = (e) => { isDragging=true; px=e.clientX-pad.offsetLeft; py=e.clientY-pad.offsetTop; };
+        document.onmousemove = (e) => { if(isDragging){ pad.style.left=(e.clientX-px)+"px"; pad.style.top=(e.clientY-py)+"px"; } };
+        document.onmouseup = () => isDragging=false;
 
-        // Funções Calculadora
+        // Calculadora
         let buffer = "";
         function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
         function limparPad() { buffer = ""; document.getElementById('display-pad').innerText = "0"; }
         function calcularPad() { try { buffer = eval(buffer).toString(); document.getElementById('display-pad').innerText = buffer; } catch { limparPad(); } }
 
-        // Sistema de Pedidos e Conferência
-        function criarPedido() {
-            const itens = ["Óculos", "Cozinha", "Eletrônicos", "Papelaria"];
-            const item = itens[Math.floor(Math.random() * itens.length)];
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `<span><b>[TIME ${time}]</b> Item: ${item}</span><button class="btn-action" onclick="conferir(this)">CONFERIR</button>`;
-            document.getElementById('pedidos').prepend(div);
-        }
-
-        function conferir(btn) {
-            const card = btn.parentElement;
-            card.classList.add('concluido');
-            btn.innerText = "CONFERIDO";
-            btn.style.background = "#95a5a6";
-            btn.disabled = true;
-        }
-
-        for(let i=0; i<4; i++) criarPedido();
-        setInterval(criarPedido, 10000);
+        atualizarTelas();
+        setInterval(gerarPedido, 8000);
     </script>
 </body>
 </html>
