@@ -15,22 +15,31 @@
 <body>
     <div class="login-box">
         <div class="logo-text">PROJETO PESCAR - SVP 4.0<br><small style="color:#7f8c8d; font-size:0.7em">Unidade Palmas / TO</small></div>
-        <input type="text" id="user" placeholder="Usuário (ex: op_01)">
+        <input type="text" id="user" placeholder="Usuário (ex: op_01, lider_01)">
         <input type="password" id="pass" placeholder="Senha">
         <button onclick="login()">AUTENTICAR NO SAP</button>
         <p id="error">❌ Usuário ou senha incorretos.</p>
     </div>
 
     <script>
+        // Lista sincronizada com seu GitHub
         const users = {
-            'op_01': { p: 'pescar123', t: '1' },
-            'op_02': { p: 'pescar123', t: '1' },
+            'op_01': { p: 'pescar123', t: '1' }, 'op_1': { p: 'pescar123', t: '1' },
+            'op_02': { p: 'pescar123', t: '1' }, 'op_2': { p: 'pescar123', t: '1' },
+            'op_03': { p: 'pescar123', t: '1' },
+            'op_04': { p: 'pescar123', t: '1' },
+            'op_05': { p: 'pescar123', t: '1' },
+            'op_06': { p: 'pescar123', t: '2' },
+            'op_07': { p: 'pescar123', t: '2' },
+            'lider_01': { p: 'lider789', t: '1' },
+            'lider_02': { p: 'lider789', t: '2' },
             'jorge_zensque': { p: 'master2026', t: 'all' }
         };
 
         function login() {
             const u = document.getElementById('user').value.toLowerCase().trim();
             const p = document.getElementById('pass').value;
+            
             if(users[u] && users[u].p === p) {
                 localStorage.setItem('svp_user', u.toUpperCase());
                 localStorage.setItem('svp_time', users[u].t);
