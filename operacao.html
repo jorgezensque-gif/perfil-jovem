@@ -2,49 +2,55 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Gestão Integrada Palmas</title>
+    <title>SVP 4.0 - Sistema de Gestão Palmas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 15px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; }
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 15px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; z-index: 10; }
         .user-info { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 10px; }
         
-        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; font-size: 1.1em; }
+        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1em; margin-bottom: 10px; }
 
-        /* ESTOQUE MANTIDO */
+        /* ESTOQUE E CALCULADORA */
         .estoque-box { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--gold); font-size: 0.8em; }
-
-        /* CALCULADORA COMPLETA */
         #container-calculadora { background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #444; }
         .display { background: #000; color: #2ecc71; padding: 10px; text-align: right; margin-bottom: 8px; font-family: monospace; border-radius: 4px; font-size: 1.4em; min-height: 30px; }
         .pad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .pad-grid button { padding: 15px 5px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; }
 
-        /* GRÁFICO E PDF MANTIDOS */
-        .box-gestao { background: white; color: var(--dark); padding: 10px; border-radius: 8px; margin-top: 10px; }
-        #mini-grafico-container { background: white; padding: 5px; border-radius: 5px; height: 100px; margin-top: 5px; }
-
-        .main { flex: 1; padding: 20px; overflow-y: auto; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
         .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; border-left: 10px solid #ccc; cursor: pointer; }
         .card.selecionado { border: 3px solid var(--gold) !important; background: #fffdf2; }
+
+        /* OVERLAY DE EMERGÊNCIA */
+        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; }
+        #overlay-stop { background: rgba(139, 0, 0, 0.95); }
     </style>
 </head>
 <body>
 
+    <div id="overlay-stop" class="overlay">
+        <h1 style="font-size: 5em; margin:0;">S T O P</h1>
+        <p id="motivo-txt" style="font-size: 1.5em; color: var(--gold);"></p>
+        <button onclick="retomarOperacao()" style="padding:20px 60px; background:var(--green); color:white; border:none; border-radius:50px; font-weight:bold; cursor:pointer; font-size:1.5em; margin-top:20px;">RETOMAR PRODUÇÃO</button>
+    </div>
+
     <div class="sidebar">
         <div class="user-info">
-            <small id="u-nivel"></small>
-            <h3 id="u-nome">---</h3>
+            <small id="u-nivel">SVP OPERACIONAL V4.0</small>
+            <h3 id="u-nome" style="margin:0">---</h3>
         </div>
 
-        <div id="painel-op" style="display:none">
+        <div id="painel-op">
             <button class="btn-stop" onclick="acionarStop()">S T O P</button>
             
             <div class="estoque-box">
                 <small style="color:var(--gold); font-weight:bold;">📦 ESTOQUE (VALORES SAP)</small>
-                <div id="lista-estoque" style="margin-top:5px; font-family: monospace;"></div>
+                <div id="lista-estoque" style="margin-top:5px;">
+                    <div>Óculos: 500</div><div>Cozinha: 300</div><div>Papelaria: 600</div>
+                </div>
             </div>
 
             <div id="container-calculadora">
@@ -59,65 +65,36 @@
                 </div>
             </div>
         </div>
-
-        <div id="painel-gestao" style="display:none">
-            <div class="box-gestao">
-                <strong style="color:var(--alta); font-size:0.8em;">🚨 AUDITORIA CENTRAL</strong>
-                <div id="lista-erros-global" style="font-size:0.8em; margin-top:5px;"></div>
-            </div>
-
-            <div class="box-gestao" style="background:rgba(255,255,255,0.1); color:white; border:1px solid #444;">
-                <small style="color:var(--gold); font-weight:bold;">📊 TENDÊNCIA</small>
-                <div id="mini-grafico-container"><canvas id="miniChart"></canvas></div>
-            </div>
-
-            <button onclick="window.print()" style="width:100%; padding:12px; margin-top:10px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 EXPORTAR PDF</button>
-        </div>
     </div>
 
     <div class="main">
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center;">
+            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
                 <small>REALIZADO</small><br><b id="kpi-realizado" style="font-size:2em">0</b>
             </div>
-            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center;">
+            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
                 <small>META</small><br><b style="font-size:2em">50</b>
             </div>
         </div>
-        <h3>FILA DE PRODUÇÃO ATIVA</h3>
+        <h3 id="status-lotes">FILA DE PRODUÇÃO ATIVA</h3>
         <div id="container-pedidos"></div>
     </div>
 
     <script>
-        // Mesma lógica de segurança e conferência anterior
-        const gestores = ['jorge_zensque', 'ger_logistica'];
         const usuario = localStorage.getItem('svp_user') || 'OP_01';
         let processados = parseInt(localStorage.getItem('svp_score')) || 0;
         let buffer = "";
         let loteAtivo = null;
+        let emParada = false;
 
         function inicializar() {
             document.getElementById('u-nome').innerText = usuario.toUpperCase();
-            const isGestao = gestores.includes(usuario.toLowerCase());
+            document.getElementById('kpi-realizado').innerText = processados;
             
-            if(isGestao) {
-                document.getElementById('u-nivel').innerText = "GESTÃO MASTER";
-                document.getElementById('painel-gestao').style.display = 'block';
-                iniciarGrafico();
-            } else {
-                document.getElementById('u-nivel').innerText = "OPERADOR";
-                document.getElementById('painel-op').style.display = 'block';
-                renderizarEstoque();
-            }
-            atualizarTelas();
-            setInterval(gerarLote, 7000);
-            setInterval(sincronizar, 1000);
-        }
-
-        function renderizarEstoque() {
-            const itens = { "Óculos": 500, "Cozinha": 300, "Eletrônicos": 200, "Papelaria": 600 };
-            document.getElementById('lista-estoque').innerHTML = Object.entries(itens)
-                .map(([k, v]) => `<div style="display:flex; justify-content:space-between;"><span>${k}</span><b>${v}</b></div>`).join('');
+            // DISPARO DA PRODUÇÃO: Tenta gerar lote a cada 5 segundos
+            setInterval(() => {
+                if(!emParada) gerarLote();
+            }, 5000);
         }
 
         function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
@@ -129,60 +106,46 @@
             loteAtivo = { el, nome, valor };
         }
 
-        function confirmarBaixa() {
-            if(!loteAtivo) return alert("Selecione um lote!");
-            if(parseInt(buffer) === loteAtivo.valor) {
-                processados++;
-                localStorage.setItem('svp_score', processados);
-                loteAtivo.el.remove();
-                loteAtivo = null;
-                limparPad();
-                atualizarTelas();
-            } else {
-                let erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
-                erros.push({ op: usuario, lote: loteAtivo.nome });
-                localStorage.setItem('svp_erros', JSON.stringify(erros));
-                alert("ERRO! Bloqueado para auditoria.");
-                location.reload();
-            }
-        }
-
         function gerarLote() {
             const container = document.getElementById('container-pedidos');
-            if(container.children.length > 5) return;
-            const tipos = [{n:"Óculos", v:500}, {n:"Cozinha", v:300}, {n:"Papelaria", v:600}];
+            if(container.children.length >= 6) return; // Mantém a fila em 6 para não travar
+
+            const tipos = [{n:"Óculos", v:500}, {n:"Cozinha", v:300}, {n:"Papelaria", v:600}, {n:"Eletrônicos", v:200}];
             const t = tipos[Math.floor(Math.random()*tipos.length)];
+            
             const card = document.createElement('div');
             card.className = 'card';
             card.onclick = () => selecionarLote(card, t.n, t.v);
-            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa</small></div><button>BAIXA SAP</button>`;
-            container.appendChild(card);
+            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa SAP</small></div><button style="background:var(--dark); color:white; border:none; padding:8px; border-radius:4px; font-size:0.7em;">BAIXA SAP</button>`;
+            container.prepend(card);
         }
 
-        function sincronizar() {
-            const erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
-            if(gestores.includes(usuario.toLowerCase())) {
-                document.getElementById('lista-erros-global').innerHTML = erros.map((e, i) => 
-                    `<button onclick="liberar(${i})" style="width:100%; background:var(--alta); color:white; border:none; margin-bottom:5px; padding:5px; border-radius:4px; cursor:pointer;">LIBERAR: ${e.op}</button>`
-                ).join('') || 'Sem pendências.';
+        function confirmarBaixa() {
+            if(!loteAtivo) return alert("Selecione um lote na lista!");
+            if(parseInt(buffer) === loteAtivo.valor) {
+                processados++;
+                localStorage.setItem('svp_score', processados);
+                document.getElementById('kpi-realizado').innerText = processados;
+                loteAtivo.el.remove();
+                loteAtivo = null;
+                limparPad();
+            } else {
+                alert("VALOR INCORRETO! Lote travado para auditoria.");
+                location.reload(); // Força reset para limpar estado de erro
             }
         }
 
-        function liberar(i) {
-            let erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
-            erros.splice(i, 1);
-            localStorage.setItem('svp_erros', JSON.stringify(erros));
+        function acionarStop() {
+            const m = prompt("Motivo da parada:");
+            if(!m) return;
+            emParada = true;
+            document.getElementById('motivo-txt').innerText = "MOTIVO: " + m.toUpperCase();
+            document.getElementById('overlay-stop').style.display = 'flex';
         }
 
-        function atualizarTelas() { document.getElementById('kpi-realizado').innerText = processados; }
-
-        function iniciarGrafico() {
-            const ctx = document.getElementById('miniChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: { labels: [1,2,3,4,5], datasets: [{ data: [2,4,3,5,4], borderColor: '#f1c40f', borderWidth: 2, fill: false }] },
-                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
+        function retomarOperacao() {
+            emParada = false;
+            document.getElementById('overlay-stop').style.display = 'none';
         }
 
         inicializar();
