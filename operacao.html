@@ -2,153 +2,128 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Sistema de Gestão Palmas</title>
+    <title>SVP 4.0 - Painel de Controle Palmas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 15px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; z-index: 10; }
-        .user-info { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 10px; }
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
+        .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
         
-        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1em; margin-bottom: 10px; }
+        /* PAINEL DE AUDITORIA */
+        .auditoria-box { background: white; color: #333; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .erro-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.8em; }
+        .btn-liberar { background: var(--green); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        /* ESTOQUE E CALCULADORA */
-        .estoque-box { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--gold); font-size: 0.8em; }
-        #container-calculadora { background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #444; }
-        .display { background: #000; color: #2ecc71; padding: 10px; text-align: right; margin-bottom: 8px; font-family: monospace; border-radius: 4px; font-size: 1.4em; min-height: 30px; }
-        .pad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .pad-grid button { padding: 15px 5px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; }
-
-        .main { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; border-left: 10px solid #ccc; cursor: pointer; }
-        .card.selecionado { border: 3px solid var(--gold) !important; background: #fffdf2; }
-
-        /* OVERLAY DE EMERGÊNCIA */
-        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; }
-        #overlay-stop { background: rgba(139, 0, 0, 0.95); }
+        .main { flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .monitor-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .full-width { grid-column: span 2; }
+        
+        .kpi-big { font-size: 3em; font-weight: bold; color: var(--dark); margin: 10px 0; }
+        canvas { max-height: 250px; }
     </style>
 </head>
 <body>
 
-    <div id="overlay-stop" class="overlay">
-        <h1 style="font-size: 5em; margin:0;">S T O P</h1>
-        <p id="motivo-txt" style="font-size: 1.5em; color: var(--gold);"></p>
-        <button onclick="retomarOperacao()" style="padding:20px 60px; background:var(--green); color:white; border:none; border-radius:50px; font-weight:bold; cursor:pointer; font-size:1.5em; margin-top:20px;">RETOMAR PRODUÇÃO</button>
-    </div>
-
     <div class="sidebar">
         <div class="user-info">
-            <small id="u-nivel">SVP OPERACIONAL V4.0</small>
-            <h3 id="u-nome" style="margin:0">---</h3>
+            <small>SVP OPERACIONAL V4.0</small>
+            <h2 id="u-nome">JORGE_ZENSQUE</h2>
+            <span style="color:var(--gold); font-weight:bold;">ACESSO: GESTÃO MASTER</span>
         </div>
 
-        <div id="painel-op">
-            <button class="btn-stop" onclick="acionarStop()">S T O P</button>
-            
-            <div class="estoque-box">
-                <small style="color:var(--gold); font-weight:bold;">📦 ESTOQUE (VALORES SAP)</small>
-                <div id="lista-estoque" style="margin-top:5px;">
-                    <div>Óculos: 500</div><div>Cozinha: 300</div><div>Papelaria: 600</div>
-                </div>
+        <button onclick="gerarRelatorioPDF()" style="width:100%; padding:15px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:10px;">📄 EXPORTAR RELATÓRIO PDF</button>
+        
+        <div class="auditoria-box">
+            <strong style="color:var(--alta)">🚨 DESBLOQUEIO DE LOTES</strong>
+            <div id="lista-erros-gestor" style="margin-top:10px;">
+                <small>Nenhum lote travado no momento.</small>
             </div>
+        </div>
 
-            <div id="container-calculadora">
-                <div class="display" id="display-pad">0</div>
-                <div class="pad-grid">
-                    <button onclick="teclar(7)">7</button><button onclick="teclar(8)">8</button><button onclick="teclar(9)">9</button>
-                    <button onclick="teclar(4)">4</button><button onclick="teclar(5)">5</button><button onclick="teclar(6)">6</button>
-                    <button onclick="teclar(1)">1</button><button onclick="teclar(2)">2</button><button onclick="teclar(3)">3</button>
-                    <button onclick="limparPad()" style="background:var(--alta)">C</button>
-                    <button onclick="teclar(0)">0</button>
-                    <button onclick="confirmarBaixa()" style="background:var(--green)">OK</button>
-                </div>
-            </div>
+        <div style="margin-top: auto; font-size: 0.7em; opacity: 0.5;">
+            Responsável: Jorge Zensque [2026]
         </div>
     </div>
 
     <div class="main">
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
-                <small>REALIZADO</small><br><b id="kpi-realizado" style="font-size:2em">0</b>
-            </div>
-            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
-                <small>META</small><br><b style="font-size:2em">50</b>
-            </div>
+        <div class="monitor-card full-width">
+            <h3>📈 TENDÊNCIA DE PRODUÇÃO (ÚLT. 30 MIN)</h3>
+            <canvas id="graficoProducao"></canvas>
         </div>
-        <h3 id="status-lotes">FILA DE PRODUÇÃO ATIVA</h3>
-        <div id="container-pedidos"></div>
+
+        <div class="monitor-card">
+            <h3>TOTAL REALIZADO</h3>
+            <div class="kpi-big" id="kpi-total">0</div>
+            <small>Meta Semanal: 50</small>
+        </div>
+
+        <div class="monitor-card">
+            <h3>STATUS DA LINHA</h3>
+            <div id="status-linha" style="font-size: 1.5em; font-weight: bold; color: var(--green);">● EM OPERAÇÃO</div>
+            <p id="msg-parada" style="color: var(--alta); font-weight: bold;"></p>
+        </div>
     </div>
 
     <script>
-        const usuario = localStorage.getItem('svp_user') || 'OP_01';
         let processados = parseInt(localStorage.getItem('svp_score')) || 0;
-        let buffer = "";
-        let loteAtivo = null;
-        let emParada = false;
-
-        function inicializar() {
-            document.getElementById('u-nome').innerText = usuario.toUpperCase();
-            document.getElementById('kpi-realizado').innerText = processados;
-            
-            // DISPARO DA PRODUÇÃO: Tenta gerar lote a cada 5 segundos
-            setInterval(() => {
-                if(!emParada) gerarLote();
-            }, 5000);
+        let erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
+        
+        function atualizarInterface() {
+            document.getElementById('kpi-total').innerText = processados;
+            renderizarErros();
         }
 
-        function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
-        function limparPad() { buffer = ""; document.getElementById('display-pad').innerText = "0"; }
+        // Função para o Gestor desbloquear o lote travado pelo operador
+        function renderizarErros() {
+            const container = document.getElementById('lista-erros-gestor');
+            if(erros.length === 0) {
+                container.innerHTML = "<small>Nenhum lote travado.</small>";
+                return;
+            }
 
-        function selecionarLote(el, nome, valor) {
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('selecionado'));
-            el.classList.add('selecionado');
-            loteAtivo = { el, nome, valor };
+            container.innerHTML = erros.map((err, index) => `
+                <div class="erro-item">
+                    <span><b>${err.item}</b> (${err.op})</span>
+                    <button class="btn-liberar" onclick="desbloquearLote(${index})">LIBERAR</button>
+                </div>
+            `).join('');
         }
 
-        function gerarLote() {
-            const container = document.getElementById('container-pedidos');
-            if(container.children.length >= 6) return; // Mantém a fila em 6 para não travar
-
-            const tipos = [{n:"Óculos", v:500}, {n:"Cozinha", v:300}, {n:"Papelaria", v:600}, {n:"Eletrônicos", v:200}];
-            const t = tipos[Math.floor(Math.random()*tipos.length)];
-            
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.onclick = () => selecionarLote(card, t.n, t.v);
-            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa SAP</small></div><button style="background:var(--dark); color:white; border:none; padding:8px; border-radius:4px; font-size:0.7em;">BAIXA SAP</button>`;
-            container.prepend(card);
-        }
-
-        function confirmarBaixa() {
-            if(!loteAtivo) return alert("Selecione um lote na lista!");
-            if(parseInt(buffer) === loteAtivo.valor) {
-                processados++;
+        function desbloquearLote(index) {
+            if(confirm("Confirmar desbloqueio manual deste lote?")) {
+                erros.splice(index, 1);
+                processados++; // Conta como realizado após auditoria
                 localStorage.setItem('svp_score', processados);
-                document.getElementById('kpi-realizado').innerText = processados;
-                loteAtivo.el.remove();
-                loteAtivo = null;
-                limparPad();
-            } else {
-                alert("VALOR INCORRETO! Lote travado para auditoria.");
-                location.reload(); // Força reset para limpar estado de erro
+                localStorage.setItem('svp_errors', JSON.stringify(erros));
+                atualizarInterface();
             }
         }
 
-        function acionarStop() {
-            const m = prompt("Motivo da parada:");
-            if(!m) return;
-            emParada = true;
-            document.getElementById('motivo-txt').innerText = "MOTIVO: " + m.toUpperCase();
-            document.getElementById('overlay-stop').style.display = 'flex';
+        // Configuração do Gráfico de Tendência
+        const ctx = document.getElementById('graficoProducao').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10m atrás', '8m atrás', '6m atrás', '4m atrás', '2m atrás', 'Agora'],
+                datasets: [{
+                    label: 'Lotes por Minuto',
+                    data: [2, 5, 3, 8, 4, 6],
+                    borderColor: '#8e44ad',
+                    backgroundColor: 'rgba(142, 68, 173, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        function gerarRelatorioPDF() {
+            window.print();
         }
 
-        function retomarOperacao() {
-            emParada = false;
-            document.getElementById('overlay-stop').style.display = 'none';
-        }
-
-        inicializar();
+        atualizarInterface();
     </script>
 </body>
 </html>
