@@ -8,85 +8,85 @@
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; }
-        .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 15px; }
-        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; width: 100%; font-size: 1.2em; }
-
-        .box-lateral { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--gold); }
+        /* Sidebar Ajustada para Mobile */
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 15px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; z-index: 10; }
         
-        /* Mini Gráfico Lateral */
-        #mini-grafico-container { background: white; padding: 5px; border-radius: 5px; margin-top: 10px; height: 120px; }
+        .user-info { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 10px; }
+        
+        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; font-size: 1.1em; }
 
-        .btn-acao { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
-        .btn-pdf { background: var(--purple); }
-        .btn-pdf:hover { background: #6c3483; }
+        /* CALCULADORA CORRIGIDA (BOTÕES VISÍVEIS) */
+        #container-calculadora { background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #444; margin-top: 5px; width: 100%; box-sizing: border-box; }
+        .display { background: #000; color: #2ecc71; padding: 10px; text-align: right; margin-bottom: 8px; font-family: monospace; border-radius: 4px; font-size: 1.4em; min-height: 30px; }
+        .pad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .pad-grid button { padding: 15px 5px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; transition: 0.1s; }
+        .pad-grid button:active { background: var(--gold); transform: scale(0.95); }
 
-        .main { flex: 1; padding: 25px; overflow-y: auto; }
-        .top-dash { display: flex; gap: 15px; margin-bottom: 25px; }
-        .kpi-card { flex: 1; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
-        .kpi-card b { font-size: 2.5em; color: var(--dark); display: block; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; border-left: 10px solid #ccc; cursor: pointer; }
+        .card.selecionado { border: 3px solid var(--gold) !important; background: #fffdf2; }
 
         .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; }
         #overlay-erro { background:rgba(0,0,0,0.95); border: 15px solid var(--alta); }
-        .item-erro { background: var(--alta); color: white; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.75em; cursor: pointer; border: 1px solid white; }
     </style>
 </head>
 <body>
 
     <div id="overlay-erro" class="overlay">
-        <h1 style="font-size: 4em; color: var(--alta);">BLOQUEIO DE QUALIDADE</h1>
+        <h1 style="font-size: 3em; color: var(--alta);">BLOQUEIO DE QUALIDADE</h1>
         <h2 style="color: var(--gold);">AGUARDE A LIBERAÇÃO DA GESTÃO</h2>
     </div>
 
     <div class="sidebar">
         <div class="user-info">
-            <small>SVP OPERACIONAL V4.0</small>
-            <h3 id="u-nome">---</h3>
-            <span id="u-nivel" style="color:var(--gold); font-size:0.8em; font-weight:bold;"></span>
+            <small id="u-nivel"></small>
+            <h3 id="u-nome" style="margin:0">---</h3>
+            <button onclick="localStorage.clear(); window.location.href='index.html'" style="width:100%; margin-top:10px; background:none; border:1px solid #ff4d4d; color:#ff4d4d; cursor:pointer; font-size:0.8em; border-radius:4px; padding:5px;">SAIR</button>
         </div>
 
-        <button class="btn-stop" onclick="acionarStop()">S T O P</button>
-
-        <div id="painel-op" style="display:none" class="box-lateral">
-            <small style="color:var(--gold); font-weight:bold;">🔢 CALCULADORA</small>
-            <div style="background:#000; color:#2ecc71; padding:10px; text-align:right; margin:8px 0; border-radius:4px; font-family:monospace;" id="display-pad">0</div>
-            <button onclick="confirmarBaixa()" style="width:100%; padding:10px; background:var(--green); border:none; color:white; font-weight:bold; cursor:pointer; border-radius:4px;">CONFIRMAR LOTE</button>
+        <div id="painel-op" style="display:none">
+            <button class="btn-stop" onclick="acionarStop()">S T O P</button>
+            <div id="container-calculadora">
+                <div class="display" id="display-pad">0</div>
+                <div class="pad-grid">
+                    <button onclick="teclar(7)">7</button><button onclick="teclar(8)">8</button><button onclick="teclar(9)">9</button>
+                    <button onclick="teclar(4)">4</button><button onclick="teclar(5)">5</button><button onclick="teclar(6)">6</button>
+                    <button onclick="teclar(1)">1</button><button onclick="teclar(2)">2</button><button onclick="teclar(3)">3</button>
+                    <button onclick="limparPad()" style="background:var(--alta)">C</button>
+                    <button onclick="teclar(0)">0</button>
+                    <button onclick="confirmarBaixa()" style="background:var(--green)">OK</button>
+                </div>
+            </div>
         </div>
 
         <div id="painel-gestao" style="display:none">
-            <div class="box-lateral" style="background:white; color:var(--dark);">
-                <strong style="color:var(--alta); font-size:0.75em;">🚨 AUDITORIA CENTRAL</strong>
-                <div id="lista-erros-global"></div>
+            <div style="background:white; color:#333; padding:10px; border-radius:8px; margin-bottom:15px;">
+                <strong style="color:var(--alta); font-size:0.8em;">🚨 AUDITORIA DE ERROS</strong>
+                <div id="lista-erros-global" style="margin-top:10px;"></div>
             </div>
-
-            <div class="box-lateral">
-                <small style="color:var(--gold); font-weight:bold;">📊 TENDÊNCIA (ÚLT. 5 MIN)</small>
-                <div id="mini-grafico-container">
-                    <canvas id="miniChart"></canvas>
-                </div>
-            </div>
-
-            <button class="btn-acao btn-pdf" onclick="exportarRelatorioPDF()">📄 EXPORTAR RELATÓRIO PDF</button>
+            <button onclick="window.print()" style="width:100%; padding:10px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 GERAR RELATÓRIO</button>
         </div>
-
-        <button onclick="localStorage.clear(); window.location.href='index.html'" style="margin-top:auto; background:none; border:1px solid #555; color:#888; cursor:pointer; font-size:0.7em; padding:5px;">SAIR</button>
     </div>
 
     <div class="main">
-        <div class="top-dash">
-            <div class="kpi-card"><small>REALIZADO</small><b id="kpi-realizado">0</b></div>
-            <div class="kpi-card"><small>META SEMANAL</small><b>50</b></div>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
+                <small>REALIZADO</small><br><b id="kpi-realizado" style="font-size:2em">0</b>
+            </div>
+            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
+                <small>META</small><br><b style="font-size:2em">50</b>
+            </div>
         </div>
-        <h3>FILA DE PRODUÇÃO ATIVA</h3>
+        <h3 id="status-lotes">FILA DE PRODUÇÃO ATIVA</h3>
         <div id="container-pedidos"></div>
     </div>
 
     <script>
         const gestores = ['jorge_zensque', 'ceo_jovem', 'ger_logistica'];
-        const usuario = localStorage.getItem('svp_user') || 'OP_01';
+        const usuario = localStorage.getItem('svp_user') || 'op_jovem';
         let processados = parseInt(localStorage.getItem('svp_score')) || 0;
-        let historicoProducao = [0, 0, 0, 0, 0]; // Dados para o mini gráfico
-        let miniChart;
+        let buffer = "";
+        let loteAtivo = null;
 
         function inicializar() {
             document.getElementById('u-nome').innerText = usuario.toUpperCase();
@@ -95,77 +95,69 @@
             if(isGestao) {
                 document.getElementById('u-nivel').innerText = "GESTÃO MASTER";
                 document.getElementById('painel-gestao').style.display = 'block';
-                iniciarMiniGrafico();
             } else {
                 document.getElementById('u-nivel').innerText = "OPERADOR";
                 document.getElementById('painel-op').style.display = 'block';
             }
             
             atualizarKPIs();
-            setInterval(atualizarDadosGrafico, 60000); // Atualiza gráfico a cada minuto
-            setInterval(sincronizar, 1000);
+            // INICIA A GERAÇÃO DE LOTES AUTOMÁTICA
+            setInterval(gerarLoteAutomatico, 5000); 
+            setInterval(sincronizarSistema, 1000);
         }
 
-        function iniciarMiniGrafico() {
-            const ctx = document.getElementById('miniChart').getContext('2d');
-            miniChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['', '', '', '', 'Agora'],
-                    datasets: [{
-                        label: 'Lotes/Min',
-                        data: historicoProducao,
-                        borderColor: '#f1c40f',
-                        backgroundColor: 'rgba(241, 196, 15, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { display: false }, y: { display: false } }
-                }
-            });
+        function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
+        function limparPad() { buffer = ""; document.getElementById('display-pad').innerText = "0"; }
+
+        function selecionarLote(el, nome, valor) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selecionado'));
+            el.classList.add('selecionado');
+            loteAtivo = { el, nome, valor };
         }
 
-        function atualizarDadosGrafico() {
-            if(!miniChart) return;
-            historicoProducao.shift();
-            historicoProducao.push(Math.floor(Math.random() * 5)); // Simula volume variável
-            miniChart.update();
+        function gerarLoteAutomatico() {
+            const container = document.getElementById('container-pedidos');
+            if(container.children.length > 5) return; // Não trava se já tiver muitos lotes
+
+            const dados = [
+                {n:"Papelaria", v:600}, {n:"Óculos", v:500}, 
+                {n:"Cozinha", v:300}, {n:"Eletrônicos", v:200}
+            ];
+            const t = dados[Math.floor(Math.random()*dados.length)];
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => selecionarLote(card, t.n, t.v);
+            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa SAP</small></div><button style="background:var(--dark); color:white; border:none; padding:8px; border-radius:4px; font-size:0.7em;">BAIXA SAP</button>`;
+            container.appendChild(card);
         }
 
-        function exportarRelatorioPDF() {
-            const dataHora = new Date().toLocaleString();
-            const win = window.open('', '_blank');
-            win.document.write(`
-                <html>
-                <body style="font-family:sans-serif; padding:40px;">
-                    <h1 style="color:#2c3e50">Relatório Operacional SVP 4.0 - Palmas</h1>
-                    <hr>
-                    <p><b>Data/Hora:</b> ${dataHora}</p>
-                    <p><b>Gestor Responsável:</b> ${usuario.toUpperCase()}</p>
-                    <h2>Produção Atual: ${processados} / 50 Lotes</h2>
-                    <div style="height:20px; background:#eee; width:100%;">
-                        <div style="height:100%; background:#27ae60; width:${(processados/50)*100}%"></div>
-                    </div>
-                    <p><i>Documento gerado automaticamente pelo Sistema de Gestão de Prioridades.</i></p>
-                    <button onclick="window.print()">Imprimir PDF</button>
-                </body>
-                </html>
-            `);
+        function confirmarBaixa() {
+            if(!loteAtivo) return alert("Selecione um lote primeiro!");
+            if(parseInt(buffer) === loteAtivo.valor) {
+                processados++;
+                loteAtivo.el.remove();
+                loteAtivo = null;
+                limparPad();
+                atualizarKPIs();
+            } else {
+                let erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
+                erros.push({ op: usuario, lote: loteAtivo.nome });
+                localStorage.setItem('svp_erros', JSON.stringify(erros));
+                limparPad();
+            }
         }
 
-        function sincronizar() {
+        function sincronizarSistema() {
             const erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
             if(gestores.includes(usuario.toLowerCase())) {
                 const lista = document.getElementById('lista-erros-global');
-                lista.innerHTML = erros.map((e, i) => `<div class="item-erro" onclick="liberar(${i})">LIBERAR: ${e.op}</div>`).join('') || 'Sem erros.';
+                lista.innerHTML = erros.map((e, i) => 
+                    `<button onclick="liberar(${i})" style="width:100%; background:var(--alta); color:white; border:none; padding:8px; border-radius:5px; margin-bottom:5px; cursor:pointer;">LIBERAR OP: ${e.op}</button>`
+                ).join('') || 'Sem pendências.';
             } else {
-                document.getElementById('overlay-erro').style.display = erros.some(e => e.op === usuario) ? 'flex' : 'none';
+                const estouBloqueado = erros.some(e => e.op === usuario);
+                document.getElementById('overlay-erro').style.display = estouBloqueado ? 'flex' : 'none';
             }
         }
 
