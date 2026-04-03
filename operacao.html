@@ -2,124 +2,68 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Painel do Gestor Master</title>
+    <title>SVP 4.0 - Operacional Palmas</title>
     <style>
-        :root { --dark: #232f3e; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; --purple: #9b59b6; }
+        :root { --dark: #232f3e; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f0f2f5; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f0f2f5; }
 
-        /* SIDEBAR FOCADA EM GESTÃO */
         .sidebar { width: 340px; background: #2c3e50; color: white; display: flex; flex-direction: column; padding: 15px; border-right: 4px solid #1a252f; }
-        .user-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 20px; }
+        .user-box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 10px; }
         
-        .btn-master { width: 100%; padding: 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 12px; font-size: 1em; color: white; transition: 0.2s; }
-        .btn-pdf { background: var(--purple); }
-        .btn-stop { background: var(--red); font-size: 1.2em; }
+        .btn-stop { width: 100%; padding: 20px; border: none; border-radius: 6px; background: var(--red); color: white; font-weight: bold; font-size: 1.5em; cursor: pointer; margin-bottom: 15px; }
 
-        .sap-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .sap-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sap-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; }
+        .sap-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
-        /* PAINEL DE DESBLOQUEIO NA SIDEBAR */
-        .unlock-panel { background: white; color: #333; padding: 15px; border-radius: 8px; border-top: 5px solid var(--red); margin-top: auto; }
+        .calc { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: auto; }
+        .screen { background: #000; color: var(--green); text-align: right; padding: 15px; font-size: 2em; font-family: monospace; border-radius: 4px; margin-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .b-calc { padding: 20px; border: none; border-radius: 4px; background: #3e5871; color: white; font-weight: bold; font-size: 1.2em; cursor: pointer; }
 
-        /* ÁREA PRINCIPAL */
-        .main { flex: 1; display: flex; flex-direction: column; }
-        .top-nav { background: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .content { padding: 25px; overflow-y: auto; }
-
-        /* GRÁFICO */
-        .chart-container { background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 25px; }
-        .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 120px; padding-top: 10px; }
-        .bar { width: 45px; background: var(--purple); border-radius: 4px 4px 0 0; position: relative; }
-        .bar::after { content: attr(data-val); position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7em; font-weight: bold; color: #666; }
-
-        .alert-master { background: var(--red); color: white; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
-        .btn-sap-lock { background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 10px solid var(--purple); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
-
     <aside class="sidebar">
         <div class="user-box">
-            <small>SVP V4.0 - PALMAS</small>
-            <h3 style="margin: 5px 0;">JORGE_ZENSQUE</h3>
-            <span style="color: var(--gold); font-size: 0.8em; font-weight: bold;">ACESSO: GESTÃO MASTER</span>
+            <small>SVP OPERACIONAL V4.0</small>
+            <h2 style="margin: 5px 0;">OP_01</h2>
+            <span style="color: var(--gold); font-size: 0.8em; font-weight: bold;">OPERADOR</span>
         </div>
 
-        <button class="btn-master btn-stop" onclick="toggleLinha()">STOP PRODUÇÃO</button>
-        <button class="btn-master btn-pdf">📄 EXPORTAR RELATÓRIO PDF</button>
+        <button class="btn-stop">STOP</button>
 
         <div class="sap-box">
-            <b style="color:var(--gold); display:block; margin-bottom:10px;">📦 STATUS DO ESTOQUE SAP</b>
+            <b style="color:var(--gold);">📦 ESTOQUE (VALORES SAP)</b>
             <div class="sap-row"><span>Óculos:</span> <b>500</b></div>
             <div class="sap-row"><span>Cozinha:</span> <b>300</b></div>
             <div class="sap-row" style="color:var(--gold)"><span>Eletrônicos:</span> <b>200</b></div>
-            <div class="sap-row"><span>Papelaria:</span> <b>600</b></div>
         </div>
 
-        <div class="unlock-panel">
-            <b style="color:var(--red); font-size:0.9em;">🚨 DESBLOQUEIO DE LOTES</b>
-            <p style="font-size:0.8em; margin:10px 0;">Nenhum lote travado no momento.</p>
+        <div class="calc">
+            <div class="screen">0</div>
+            <div class="grid">
+                <button class="b-calc">7</button><button class="b-calc">8</button><button class="b-calc">9</button>
+                <button class="b-calc">4</button><button class="b-calc">5</button><button class="b-calc">6</button>
+                <button class="b-calc">1</button><button class="b-calc">2</button><button class="b-calc">3</button>
+                <button class="b-calc" style="background:var(--red)">C</button>
+                <button class="b-calc">0</button>
+                <button class="b-calc" style="background:var(--green)">OK</button>
+            </div>
         </div>
     </aside>
 
     <main class="main">
-        <header class="top-nav">
-            <div id="status-txt" style="color: var(--green); font-weight: bold; font-size: 1.1em;">● LINHA EM OPERAÇÃO</div>
-            <div style="text-align: right;">
-                <span style="font-size: 0.9em; font-weight: bold; color: #888;">TOTAL REALIZADO:</span>
-                <span id="total-val" style="font-size: 2.2em; font-weight: bold; color: var(--purple); margin-left: 10px;">4</span>
-            </div>
-        </header>
-
-        <div class="content">
-            <div class="chart-container">
-                <b style="color: #444;">📈 TENDÊNCIA DE PRODUÇÃO (Lotes por Minuto)</b>
-                <div class="bar-chart">
-                    <div class="bar" style="height: 30%;" data-val="2"></div>
-                    <div class="bar" style="height: 65%;" data-val="5"></div>
-                    <div class="bar" style="height: 40%;" data-val="3"></div>
-                    <div class="bar" style="height: 95%;" data-val="8"></div>
-                    <div class="bar" style="height: 55%;" data-val="4"></div>
-                    <div class="bar" style="height: 80%;" data-val="6"></div>
-                </div>
-            </div>
-
-            <div id="alerta-transbordo" class="alert-master">
-                <h2 style="margin: 0;">⚠️ ALERTA DE TRANSBORDAMENTO (3 DIAS)</h2>
-                <p>Acúmulo crítico detectado na linha. O disparo automático do SAP pode ser interrompido abaixo.</p>
-                <button class="btn-sap-lock" onclick="bloquearSap()">⛔ PARAR DISPARO NO SAP</button>
-            </div>
-
-            <h3 style="color: #2c3e50;">📋 RESUMO DA FILA ATIVA</h3>
-            <div style="background: white; padding: 20px; border-radius: 10px; border-left: 10px solid var(--gold); display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <b>LOTE: Eletrônicos</b><br>
-                    <small>REF: 2026-E1 | ACUMULADO: 3 DIAS</small>
-                </div>
-                <b style="color: var(--red);">PENDENTE</b>
-            </div>
+        <h1 style="color: var(--green);">● EM OPERAÇÃO</h1>
+        <div style="font-size: 5em; font-weight: bold; color: #9b59b6;">0</div>
+        <hr>
+        <h3>📋 FILA DE PRODUÇÃO ATIVA</h3>
+        <div class="card">
+            <div><b>LOTE: Eletrônicos</b><br><small>Aguardando Baixa SAP</small></div>
+            <b style="color: #888;">AGUARDANDO</b>
         </div>
     </main>
-
-    <script>
-        function toggleLinha() {
-            const st = document.getElementById('status-txt');
-            if(st.innerText.includes("OPERAÇÃO")) {
-                st.innerText = "■ LINHA PARADA PELO GESTOR";
-                st.style.color = "red";
-            } else {
-                st.innerText = "● LINHA EM OPERAÇÃO";
-                st.style.color = "green";
-            }
-        }
-
-        function bloquearSap() {
-            const st = document.getElementById('status-txt');
-            st.innerText = "🛑 DISPARO BLOQUEADO NO SAP (JORGE)";
-            st.style.color = "orange";
-            alert("Comando Master enviado: Disparo de novos lotes interrompido no SAP.");
-        }
-    </script>
 </body>
 </html>
