@@ -2,32 +2,28 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Painel Operacional Palmas</title>
+    <title>SVP 4.0 - Operacional Palmas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
         .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
+        .btn-stop { width:100%; padding:15px; background:red; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:15px; font-size:1.2em; }
         
-        /* Componentes */
         .estoque-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid var(--gold); }
         .item-sap { font-size: 0.85em; margin-top: 5px; font-family: monospace; display: flex; justify-content: space-between; }
-        .auditoria-box { background: white; color: #333; padding: 15px; border-radius: 8px; margin-top: 10px; min-height: 80px; }
         
-        /* Calculadora Operador */
-        .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
-        .calc-btn { padding: 15px; border: none; border-radius: 5px; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
-        .calc-display { background: black; color: #27ae60; padding: 10px; text-align: right; font-family: monospace; font-size: 1.2em; border-radius: 5px; margin-bottom: 10px; }
+        /* Calculadora */
+        .calc-display { background: black; color: #27ae60; padding: 15px; text-align: right; font-family: monospace; font-size: 1.5em; border-radius: 5px; margin-bottom: 10px; border: 1px solid #444; }
+        .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .calc-btn { padding: 20px; border: none; border-radius: 5px; background: #34495e; color: white; font-size: 1.2em; font-weight: bold; cursor: pointer; }
+        .calc-btn:active { background: var(--gold); color: black; }
 
-        /* Main Area */
-        .main { flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .monitor-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .full-width { grid-column: span 2; }
-        canvas { max-height: 250px !important; width: 100% !important; }
-        .btn-stop { width:100%; padding:15px; background:red; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:15px; font-size:1.2em; letter-spacing:2px; }
+        .main { flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 20px; justify-content: center; align-items: center; }
+        .kpi-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; width: 80%; max-width: 500px; }
+        .master-only { width: 100%; max-width: 900px; }
     </style>
 </head>
 <body>
@@ -59,34 +55,25 @@
                 <button class="calc-btn" style="background:#27ae60" onclick="confirmarLote()">OK</button>
             </div>
         </div>
+    </div>
 
-        <div id="view-master" style="display:none">
-            <button onclick="window.print()" style="width:100%; padding:15px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:15px;">📄 EXPORTAR RELATÓRIO PDF</button>
-            <div class="auditoria-box">
-                <strong style="color:var(--alta); font-size:0.8em;">🚨 DESBLOQUEIO DE LOTES</strong>
-                <div id="auditoria-lista" style="margin-top:10px; font-size: 0.8em;">Nenhum lote travado.</div>
+    <div class="main">
+        <div class="kpi-card">
+            <h1 style="color: var(--dark); margin: 0; font-size: 1.5em;">TOTAL REALIZADO</h1>
+            <div id="kpi-total" style="font-size: 8em; font-weight: bold; color: var(--purple); line-height: 1;">0</div>
+            <p style="color: var(--green); font-weight: bold; margin-top: 20px;">● LINHA EM OPERAÇÃO</p>
+        </div>
+
+        <div id="master-chart" class="master-only" style="display:none">
+            <div style="background:white; padding:20px; border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3>📈 TENDÊNCIA DE PRODUÇÃO</h3>
+                <canvas id="graficoProducao" style="max-height: 200px;"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="main">
-        <div class="monitor-card full-width">
-            <h3>📈 TENDÊNCIA DE PRODUÇÃO (ÚLT. 30 MIN)</h3>
-            <canvas id="graficoProducao"></canvas>
-        </div>
-        <div class="monitor-card">
-            <h3>TOTAL REALIZADO</h3>
-            <div id="kpi-total" style="font-size: 3em; font-weight: bold; color: var(--dark);">0</div>
-            <small>Meta Semanal: 50</small>
-        </div>
-        <div class="monitor-card">
-            <h3>STATUS DA LINHA</h3>
-            <div style="font-size: 1.5em; font-weight: bold; color: var(--green); margin-top: 10px;">● EM OPERAÇÃO</div>
-        </div>
-    </div>
-
     <script>
-        const USER = "OP_01"; // Mude para "JORGE_ZENSQUE" para ver a visão Master
+        const USER = "OP_01"; // Mude para "JORGE_ZENSQUE" para habilitar o gráfico
 
         function init() {
             document.getElementById('display-nome').innerText = USER;
@@ -94,11 +81,12 @@
                 document.getElementById('display-nivel').innerText = "OPERADOR";
                 document.getElementById('view-operador').style.display = 'block';
             } else {
-                document.getElementById('display-nivel').innerText = "ACESSO: GESTÃO MASTER";
-                document.getElementById('view-master').style.display = 'block';
+                document.getElementById('display-nivel').innerText = "GESTÃO MASTER";
+                document.getElementById('master-chart').style.display = 'block';
+                renderChart();
             }
-            renderChart();
-            setInterval(updateKPI, 2000);
+            updateKPI();
+            setInterval(updateKPI, 1000);
         }
 
         function addNum(n) {
@@ -114,7 +102,6 @@
                 let score = parseInt(localStorage.getItem('svp_score') || 0);
                 localStorage.setItem('svp_score', score + 1);
                 resetCalc();
-                alert("Lote confirmado com sucesso!");
             }
         }
 
@@ -127,9 +114,9 @@
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['10m atrás', '8m atrás', '6m atrás', '4m atrás', '2m atrás', 'Agora'],
+                    labels: ['10m', '8m', '6m', '4m', '2m', 'Agora'],
                     datasets: [{
-                        label: 'Lotes por Minuto',
+                        label: 'Lotes/Min',
                         data: [2, 5, 3, 8, 4, 6],
                         borderColor: '#8e44ad',
                         backgroundColor: 'rgba(142, 68, 173, 0.1)',
