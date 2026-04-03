@@ -2,189 +2,214 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Blindado Palmas</title>
+    <title>SVP 4.0 - Sistema de Gestão Palmas</title>
     <style>
         :root { 
-            --baixa: #ecf0f1; --normal: #3498db; --normal-alta: #f1c40f; --alta: #e74c3c;
-            --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --light: #f4f7f6; --purple: #8e44ad;
+            --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad;
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
+        /* Sidebar Fixa e Organizada */
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; }
+        
         .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 15px; }
         
-        .admin-panel, #area-auditoria-master { 
-            display: none; 
-            background: #1e272e; padding: 15px; border-radius: 8px; border: 1px solid var(--gold); margin-bottom: 15px; 
-        }
-        
-        #area-auditoria-master { border-color: var(--alta); background: #ffffff; color: #2c3e50; }
+        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; width: 100%; font-size: 1.2em; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }
 
-        .btn-lider { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
-        .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 1.2em; animation: pulse-red 1.5s infinite; }
-        
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+        /* Calculadora Integrada na Lateral */
+        #container-calculadora { background: #1e272e; padding: 12px; border-radius: 8px; border: 1px solid #444; margin-top: 10px; display: none; }
+        .display { background: #000; color: #2ecc71; padding: 10px; text-align: right; margin-bottom: 8px; font-family: monospace; border-radius: 4px; font-size: 1.2em; }
+        .pad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .pad-grid button { padding: 12px; border: none; border-radius: 4px; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
+        .pad-grid button:active { background: var(--gold); }
 
-        /* Área Principal */
+        /* Área de Trabalho */
         .main { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 10px solid #ccc; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 10px solid #ccc; cursor: pointer; transition: 0.2s; }
+        .card:hover { transform: translateX(5px); }
+        .card.selecionado { border: 3px solid var(--gold) !important; background: #fffdf2; }
         
-        /* Overlay de Parada */
-        #overlay-stop { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(139,0,0,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; }
+        /* Overlay de Emergência */
+        #overlay-stop { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(139,0,0,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; }
 
-        #svp-pad { position: absolute; top: 150px; right: 30px; width: 220px; background: var(--dark); border: 2px solid var(--gold); border-radius: 12px; padding: 15px; color: white; z-index: 1000; cursor: grab; }
-        #display-pad { background:#1e272e; color:#2ecc71; padding:10px; text-align:right; border-radius:5px; margin-bottom:10px; font-family: monospace; font-size: 1.2em; }
+        .btn-lider { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
     </style>
 </head>
 <body>
 
     <div id="overlay-stop">
-        <h1 style="font-size: 4em; margin:0;">STOP</h1>
-        <p id="txt-stop" style="font-size: 1.5em; color: var(--gold);"></p>
-        <button onclick="retomar()" style="background:var(--green); color:white; border:none; padding:20px 60px; border-radius:50px; font-weight:bold; cursor:pointer; font-size:1.5em;">RETOMAR LINHA</button>
+        <h1 style="font-size: 5em; margin:0;">S T O P</h1>
+        <p id="motivo-txt" style="font-size: 1.5em; color: var(--gold);"></p>
+        <button onclick="retomarLinha()" style="padding:20px 60px; background:var(--green); color:white; border:none; border-radius:50px; font-weight:bold; cursor:pointer; font-size:1.5em; margin-top:20px;">RETOMAR OPERAÇÃO</button>
     </div>
 
     <div class="sidebar">
         <div class="user-info">
             <small>SVP OPERACIONAL V4.0</small>
             <h3 id="u-nome" style="margin:5px 0">---</h3>
-            <span id="u-time" style="color:var(--gold); font-weight: bold;">--</span>
-            <button onclick="localStorage.clear(); window.location.href='index.html'" style="width:100%; margin-top:10px; background:none; border:1px solid #e74c3c; color:#e74c3c; cursor:pointer; font-size:0.7em;">SAIR</button>
+            <span id="u-nivel" style="color:var(--gold); font-size:0.8em; font-weight:bold;"></span>
+            <button onclick="localStorage.clear(); window.location.href='index.html'" style="width:100%; margin-top:10px; background:none; border:1px solid #e74c3c; color:#e74c3c; cursor:pointer; font-size:0.7em; border-radius:4px;">ENCERRAR SESSÃO</button>
         </div>
 
-        <button class="btn-stop" onclick="acionarStop()">S T O P</button>
+        <div id="painel-operador" style="display:none">
+            <button class="btn-stop" onclick="acionarStop()">S T O P</button>
 
-        <div class="admin-panel" id="panel-ceo">
-            <small style="color:var(--gold)">GESTÃO MASTER</small>
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:10px; border-left: 3px solid var(--gold);">
+                <small style="color:var(--gold); font-weight:bold;">📦 ESTOQUE CENTRAL</small>
+                <div id="lista-estoque" style="font-size:0.85em; margin-top:5px; font-family: monospace;"></div>
+            </div>
+
+            <div id="container-calculadora" style="display:block">
+                <div class="display" id="display-pad">0</div>
+                <div class="pad-grid">
+                    <button onclick="teclar(7)">7</button><button onclick="teclar(8)">8</button><button onclick="teclar(9)">9</button>
+                    <button onclick="teclar(4)">4</button><button onclick="teclar(5)">5</button><button onclick="teclar(6)">6</button>
+                    <button onclick="teclar(1)">1</button><button onclick="teclar(2)">2</button><button onclick="teclar(3)">3</button>
+                    <button onclick="limparPad()" style="background:var(--alta)">C</button>
+                    <button onclick="teclar(0)">0</button>
+                    <button onclick="confirmarBaixa()" style="background:var(--green)">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="painel-ceo" style="display:none">
+            <h4 style="color:var(--gold); margin:0 0 10px 0;">GESTÃO MASTER</h4>
             <button class="btn-lider" style="background:var(--purple)" onclick="gerarRelatorioPDF()">📄 RELATÓRIO PDF</button>
-            <button class="btn-lider" style="background:#555" onclick="resetarMeta()">ZERAR SEMANA</button>
+            <button class="btn-lider" style="background:#444" onclick="resetarSemana()">Zerar Semana</button>
+            
+            <div style="margin-top:20px; background:white; color:#2c3e50; padding:10px; border-radius:5px;">
+                <strong style="font-size:0.8em; color:var(--alta)">🚨 AUDITORIA DE ERROS</strong>
+                <div id="lista-erros" style="font-size:0.7em; margin-top:5px;">Nenhum erro.</div>
+            </div>
         </div>
 
-        <div id="area-auditoria-master">
-            <h4 style="color:var(--alta); margin:5px 0;">🚨 AUDITORIA</h4>
-            <div id="lista-bloqueados" style="font-size: 0.75em;"></div>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top:15px;">
-            <small>META SEMANAL</small>
-            <h3 id="meta-txt" style="margin:5px 0">0 / 50</h3>
-            <div style="height: 10px; background: #444; border-radius: 5px; overflow: hidden;">
+        <div style="margin-top:15px; background:rgba(255,255,255,0.05); padding:10px; border-radius:5px;">
+            <small>PROGRESSO: <span id="meta-txt">0 / 50</span></small>
+            <div style="height: 8px; background: #444; border-radius: 4px; overflow: hidden; margin-top:5px;">
                 <div id="meta-barra" style="height: 100%; background: var(--gold); width: 0%;"></div>
             </div>
         </div>
 
-        <div style="margin-top: auto; font-size: 0.6em; opacity: 0.5;">
+        <div style="margin-top:auto; font-size:0.6em; opacity:0.5;">
             Responsável: Jorge Zensque [2026]
         </div>
     </div>
 
     <div class="main">
+        <h2 id="titulo-area">PROCESSAMENTO DE LOTES</h2>
         <div id="container-pedidos"></div>
-        <div id="svp-pad">
-            <div id="display-pad">0</div>
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
-                <button onclick="teclar(7)" style="padding:10px">7</button><button onclick="teclar(8)" style="padding:10px">8</button><button onclick="teclar(9)" style="padding:10px">9</button>
-                <button onclick="teclar(4)" style="padding:10px">4</button><button onclick="teclar(5)" style="padding:10px">5</button><button onclick="teclar(6)" style="padding:10px">6</button>
-                <button onclick="teclar(1)" style="padding:10px">1</button><button onclick="teclar(2)" style="padding:10px">2</button><button onclick="teclar(3)" style="padding:10px">3</button>
-                <button onclick="limparPad()" style="background:var(--alta); color:white">C</button>
-                <button onclick="teclar(0)" style="padding:10px">0</button>
-                <button onclick="limparPad()" style="background:var(--green); color:white">OK</button>
-            </div>
-        </div>
     </div>
 
     <script>
-        const gestores = ['jorge_zensque', 'diretor'];
-        const user = localStorage.getItem('svp_user') || 'visitante';
+        const gestores = ['jorge_zensque', 'diretor', 'gerente'];
+        const usuario = localStorage.getItem('svp_user') || 'OP_01';
         let processados = parseInt(localStorage.getItem('svp_score')) || 0;
-        let paradas = JSON.parse(localStorage.getItem('svp_paradas')) || [];
         let erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
-        let isStopped = false;
+        let paradas = JSON.parse(localStorage.getItem('svp_paradas')) || [];
+        
+        let loteAtivo = null;
+        let freeze = false;
 
-        function acionarStop() {
-            let m = prompt("Motivo da parada (Ex: Banheiro, Energia, Acidente):");
-            if (!m) return;
-            isStopped = true;
-            document.getElementById('txt-stop').innerText = "MOTIVO: " + m.toUpperCase();
-            document.getElementById('overlay-stop').style.display = 'flex';
-            paradas.push({ motivo: m, inicio: new Date().toLocaleTimeString(), user: user });
-            localStorage.setItem('svp_paradas', JSON.stringify(paradas));
-        }
+        function inicializar() {
+            document.getElementById('u-nome').innerText = usuario.toUpperCase();
+            const isCEO = gestores.includes(usuario.toLowerCase());
 
-        function retomar() {
-            isStopped = false;
-            document.getElementById('overlay-stop').style.display = 'none';
-            if(paradas.length > 0) paradas[paradas.length-1].fim = new Date().toLocaleTimeString();
-            localStorage.setItem('svp_paradas', JSON.stringify(paradas));
-        }
-
-        function aplicarSeguranca() {
-            document.getElementById('u-nome').innerText = user.toUpperCase();
-            if(gestores.includes(user.toLowerCase())) {
-                document.getElementById('panel-ceo').style.display = 'block';
-                document.getElementById('area-auditoria-master').style.display = 'block';
+            if(isCEO) {
+                document.getElementById('u-nivel').innerText = "ACESSO: GESTÃO MASTER";
+                document.getElementById('painel-ceo').style.display = 'block';
+                document.getElementById('titulo-area').innerText = "MONITORAMENTO EM TEMPO REAL";
+            } else {
+                document.getElementById('u-nivel').innerText = "ACESSO: OPERACIONAL";
+                document.getElementById('painel-operador').style.display = 'block';
+                renderizarEstoque();
             }
             atualizarTelas();
-            // Logout por inatividade
-            setTimeout(() => { if(!isStopped) { localStorage.clear(); window.location.href='index.html'; } }, 30 * 60 * 1000);
+            setInterval(gerarDemanda, 8000);
         }
 
-        function darBaixa(btn, item) {
-            const val = parseInt(document.getElementById('display-pad').innerText);
-            // Simulação de saldo (Ex: Óculos = 500)
-            if (val !== 500 && val !== 300 && val !== 200 && val !== 600) {
-                erros.push({ item: item, op: user, hora: new Date().toLocaleTimeString() });
-                processados = Math.max(0, processados - 5);
-                localStorage.setItem('svp_score', processados);
-                localStorage.setItem('svp_errors', JSON.stringify(erros));
-                btn.parentElement.remove();
-                alert("VALOR INCORRETO!");
-                atualizarTelas();
-                return;
-            }
-            processados++;
-            localStorage.setItem('svp_score', processados);
-            btn.parentElement.classList.add('concluido');
-            atualizarTelas();
+        function renderizarEstoque() {
+            const itens = { "Óculos": 500, "Cozinha": 300, "Eletrônicos": 200, "Papelaria": 600 };
+            document.getElementById('lista-estoque').innerHTML = Object.entries(itens)
+                .map(([k, v]) => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #444; padding:3px 0"><span>${k}</span><b>${v}</b></div>`).join('');
         }
 
-        function atualizarTelas() {
-            document.getElementById('meta-txt').innerText = `${processados} / 50`;
-            document.getElementById('meta-barra').style.width = Math.min((processados/50)*100, 100) + "%";
-            const aud = document.getElementById('lista-bloqueados');
-            aud.innerHTML = erros.map(e => `<div style="background:#f8d7da; padding:3px; margin:2px;">${e.item} (${e.op})</div>`).join('') || 'Limpo';
+        function selecionarLote(el, item, valorCorreto) {
+            if(gestores.includes(usuario.toLowerCase())) return;
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selecionado'));
+            el.classList.add('selecionado');
+            loteAtivo = { el, item, valorCorreto };
         }
-
-        function gerarRelatorioPDF() {
-            const win = window.open('', '_blank');
-            win.document.write(`
-                <html><body><h1>Relatório SVP - Gestão Jorge</h1>
-                <p>Data: ${new Date().toLocaleDateString()}</p>
-                <p>Produção: ${processados}/50</p>
-                <h3>Paradas de Linha (STOP):</h3>
-                <ul>${paradas.map(p => `<li>${p.motivo} | Início: ${p.inicio} | Fim: ${p.fim || '---'}</li>`).join('')}</ul>
-                <h3>Erros:</h3>
-                <ul>${erros.map(e => `<li>${e.item} - Op: ${e.op}</li>`).join('')}</ul>
-                </body></html>`);
-            win.print();
-        }
-
-        function resetarMeta() { if(confirm("Zerar tudo?")) { localStorage.clear(); location.reload(); } }
 
         let buffer = "";
         function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
         function limparPad() { buffer = ""; document.getElementById('display-pad').innerText = "0"; }
 
-        setInterval(() => { if(!isStopped) {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `<div><small>PENDENTE</small><br>📦 Lote Aleatório</div><button class="btn-lider" style="background:var(--dark); width:auto" onclick="darBaixa(this, 'Lote')">BAIXA</button>`;
-            document.getElementById('container-pedidos').prepend(div);
-            if(document.getElementById('container-pedidos').children.length > 5) document.getElementById('container-pedidos').lastChild.remove();
-        }}, 8000);
+        function confirmarBaixa() {
+            if(!loteAtivo) return alert("Selecione um lote primeiro!");
+            if(parseInt(buffer) === loteAtivo.valorCorreto) {
+                processados++;
+                loteAtivo.el.remove();
+                localStorage.setItem('svp_score', processados);
+                loteAtivo = null;
+                limparPad();
+                atualizarTelas();
+            } else {
+                erros.push({ item: loteAtivo.item, op: usuario, hora: new Date().toLocaleTimeString() });
+                localStorage.setItem('svp_errors', JSON.stringify(erros));
+                alert("VALOR INCORRETO! Lote enviado para auditoria.");
+                loteAtivo.el.remove();
+                loteAtivo = null;
+                limparPad();
+            }
+        }
 
-        aplicarSeguranca();
+        function acionarStop() {
+            const m = prompt("Motivo do STOP:");
+            if(!m) return;
+            freeze = true;
+            document.getElementById('motivo-txt').innerText = "MOTIVO: " + m.toUpperCase();
+            document.getElementById('overlay-stop').style.display = 'flex';
+            paradas.push({ motivo: m, inicio: new Date().toLocaleTimeString() });
+            localStorage.setItem('svp_paradas', JSON.stringify(paradas));
+        }
+
+        function retomarLinha() {
+            freeze = false;
+            document.getElementById('overlay-stop').style.display = 'none';
+            if(paradas.length > 0) paradas[paradas.length-1].fim = new Date().toLocaleTimeString();
+            localStorage.setItem('svp_paradas', JSON.stringify(paradas));
+        }
+
+        function atualizarTelas() {
+            document.getElementById('meta-txt').innerText = `${processados} / 50`;
+            document.getElementById('meta-barra').style.width = Math.min((processados/50)*100, 100) + "%";
+            if(gestores.includes(usuario.toLowerCase())) {
+                document.getElementById('lista-erros').innerHTML = erros.map(e => `<div>${e.item} (${e.op})</div>`).join('') || 'Nenhum erro.';
+            }
+        }
+
+        function gerarDemanda() {
+            if(freeze) return;
+            const tipos = [{n:"Óculos", v:500}, {n:"Cozinha", v:300}, {n:"Eletrônicos", v:200}, {n:"Papelaria", v:600}];
+            const t = tipos[Math.floor(Math.random()*4)];
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = function() { selecionarLote(this, t.n, t.v); };
+            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa SAP</small></div><button style="background:var(--dark); color:white; border:none; padding:8px; border-radius:4px; font-size:0.7em;">BAIXA SAP</button>`;
+            document.getElementById('container-pedidos').prepend(card);
+            if(document.getElementById('container-pedidos').children.length > 6) document.getElementById('container-pedidos').lastChild.remove();
+        }
+
+        function gerarRelatorioPDF() {
+            const win = window.open('', '_blank');
+            win.document.write(`<html><body><h1>Relatório SVP - Gestão Jorge</h1><p>Produção: ${processados}/50</p><h3>Paradas (STOP):</h3><ul>${paradas.map(p => `<li>${p.motivo} (${p.inicio} - ${p.fim || '---'})</li>`).join('')}</ul></body></html>`);
+            win.print();
+        }
+
+        function resetarSemana() { if(confirm("Deseja zerar o progresso?")) { localStorage.clear(); location.reload(); } }
+
+        inicializar();
     </script>
 </body>
 </html>
