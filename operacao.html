@@ -8,17 +8,17 @@
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Estática para evitar travamentos */
         .sidebar { width: 320px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; border-right: 5px solid #34495e; }
         .user-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 20px; }
         
+        /* Box de Estoque Unificado */
         .estoque-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid var(--gold); }
-        .auditoria-box { background: white; color: #333; padding: 15px; border-radius: 8px; margin-top: 10px; min-height: 80px; }
+        .item-sap { display: flex; justify-content: space-between; border-bottom: 1px solid #444; padding: 3px 0; font-size: 0.85em; font-family: monospace; }
         
+        .auditoria-box { background: white; color: #333; padding: 15px; border-radius: 8px; margin-top: 10px; min-height: 80px; }
         .main { flex: 1; padding: 25px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .monitor-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .full-width { grid-column: span 2; }
-        canvas { max-height: 250px !important; width: 100% !important; }
     </style>
 </head>
 <body>
@@ -26,33 +26,29 @@
     <div class="sidebar">
         <div class="user-info">
             <small>SVP OPERACIONAL V4.0</small>
-            <h2 style="margin:5px 0">JORGE_ZENSQUE</h2>
-            <span style="color:var(--gold); font-size:0.8em; font-weight:bold;">ACESSO: GESTÃO MASTER</span>
+            <h2 id="u-nome" style="margin:5px 0">CARREGANDO...</h2>
+            <span id="u-nivel" style="color:var(--gold); font-size:0.8em; font-weight:bold;"></span>
         </div>
 
         <div class="estoque-box">
             <strong style="color:var(--gold); font-size:0.9em;">📦 ESTOQUE (VALORES SAP)</strong>
-            <div id="lista-estoque" style="font-size:0.85em; margin-top:10px; font-family: monospace;">
-                <div style="display:flex; justify-content:space-between;"><span>Óculos:</span><b>500</b></div>
-                <div style="display:flex; justify-content:space-between;"><span>Cozinha:</span><b>300</b></div>
-                <div style="display:flex; justify-content:space-between;"><span>Papelaria:</span><b>600</b></div>
-            </div>
+            <div id="lista-estoque" style="margin-top:10px;"></div>
         </div>
 
-        <button onclick="window.print()" style="width:100%; padding:15px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 EXPORTAR RELATÓRIO PDF</button>
-        
+        <div id="controles-master" style="display:none">
+            <button onclick="window.print()" style="width:100%; padding:15px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-bottom:10px;">📄 EXPORTAR RELATÓRIO PDF</button>
+        </div>
+
         <div class="auditoria-box">
             <strong style="color:var(--alta); font-size:0.8em;">🚨 DESBLOQUEIO DE LOTES</strong>
-            <div id="lista-erros-gestor" style="margin-top:10px; font-size: 0.8em;">
-                <small>Nenhum lote travado.</small>
-            </div>
+            <div id="auditoria-lista" style="margin-top:10px; font-size: 0.8em;">Nenhum lote travado.</div>
         </div>
     </div>
 
     <div class="main">
         <div class="monitor-card full-width">
-            <h3>📈 TENDÊNCIA DE PRODUÇÃO (ÚLT. 30 MIN)</h3>
-            <canvas id="graficoProducao"></canvas>
+            <h3 style="margin-top:0">📈 TENDÊNCIA DE PRODUÇÃO (ÚLT. 30 MIN)</h3>
+            <canvas id="graficoProducao" height="180"></canvas>
         </div>
 
         <div class="monitor-card">
@@ -68,60 +64,50 @@
     </div>
 
     <script>
-        // Lógica de Sincronização
+        const usuario = "JORGE_ZENSQUE"; // Simulação baseada no seu perfil
+        
+        function inicializarPainel() {
+            document.getElementById('u-nome').innerText = usuario;
+            document.getElementById('u-nivel').innerText = "ACESSO: GESTÃO MASTER";
+            document.getElementById('controles-master').style.display = 'block';
+            
+            renderizarEstoque();
+            desenharGrafico();
+            atualizarDados();
+            setInterval(atualizarDados, 3000);
+        }
+
+        function renderizarEstoque() {
+            const itens = { "Óculos": 500, "Cozinha": 300, "Papelaria": 600 };
+            document.getElementById('lista-estoque').innerHTML = Object.entries(itens)
+                .map(([k, v]) => `<div class="item-sap"><span>${k}:</span><b>${v}</b></div>`).join('');
+        }
+
         function atualizarDados() {
             const score = localStorage.getItem('svp_score') || 0;
-            const erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
-            
             document.getElementById('kpi-total').innerText = score;
-            
-            const container = document.getElementById('lista-erros-gestor');
-            if(erros.length > 0) {
-                container.innerHTML = erros.map((err, i) => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; align-items:center;">
-                        <span>${err.item}</span>
-                        <button onclick="liberar(${i})" style="background:var(--green); color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer;">OK</button>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = "<small>Nenhum lote travado.</small>";
-            }
         }
 
-        function liberar(idx) {
-            let erros = JSON.parse(localStorage.getItem('svp_errors')) || [];
-            let score = parseInt(localStorage.getItem('svp_score')) || 0;
-            erros.splice(idx, 1);
-            score++;
-            localStorage.setItem('svp_errors', JSON.stringify(erros));
-            localStorage.setItem('svp_score', score);
-            atualizarDados();
+        function desenharGrafico() {
+            const ctx = document.getElementById('graficoProducao').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['10m atrás', '8m atrás', '6m atrás', '4m atrás', '2m atrás', 'Agora'],
+                    datasets: [{
+                        label: 'Lotes por Minuto',
+                        data: [2, 5, 3, 8, 4, 6],
+                        borderColor: '#8e44ad',
+                        backgroundColor: 'rgba(142, 68, 173, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
         }
 
-        // GRÁFICO PRESERVADO (Conforme solicitado)
-        const ctx = document.getElementById('graficoProducao').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['10m atrás', '8m atrás', '6m atrás', '4m atrás', '2m atrás', 'Agora'],
-                datasets: [{
-                    label: 'Lotes por Minuto',
-                    data: [2, 5, 3, 8, 4, 6],
-                    borderColor: '#8e44ad',
-                    backgroundColor: 'rgba(142, 68, 173, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                animation: false // Desligado para evitar "congelamento" visual ao atualizar
-            }
-        });
-
-        setInterval(atualizarDados, 2000);
-        atualizarDados();
+        window.onload = inicializarPainel;
     </script>
 </body>
 </html>
