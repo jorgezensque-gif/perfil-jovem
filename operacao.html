@@ -2,68 +2,114 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Operacional Palmas</title>
+    <title>SVP 4.0 - Gestão Master Palmas</title>
     <style>
-        :root { --dark: #232f3e; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; }
+        :root { --dark: #1a252f; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; --purple: #9b59b6; }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f7f6; overflow: hidden; }
 
-        .sidebar { width: 340px; background: #2c3e50; color: white; display: flex; flex-direction: column; padding: 15px; border-right: 4px solid #1a252f; }
-        .user-box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 10px; }
+        /* SIDEBAR MASTER: SEM CALCULADORA */
+        .sidebar { width: 320px; background: #2c3e50; color: white; display: flex; flex-direction: column; padding: 15px; border-right: 4px solid var(--dark); }
+        .user-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 20px; }
         
-        .btn-stop { width: 100%; padding: 20px; border: none; border-radius: 6px; background: var(--red); color: white; font-weight: bold; font-size: 1.5em; cursor: pointer; margin-bottom: 15px; }
+        .btn-stop { width: 100%; padding: 18px; border: none; border-radius: 6px; background: var(--red); color: white; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-bottom: 15px; }
 
-        .sap-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; }
-        .sap-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        /* MONITORAMENTO DA EQUIPE (20 OPERADORES) */
+        .team-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+        .ops-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 8px; }
+        .op-dot { height: 25px; border-radius: 3px; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 0.6em; font-weight: bold; }
+        .op-off { background: #555; }
 
-        .calc { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: auto; }
-        .screen { background: #000; color: var(--green); text-align: right; padding: 15px; font-size: 2em; font-family: monospace; border-radius: 4px; margin-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .b-calc { padding: 20px; border: none; border-radius: 4px; background: #3e5871; color: white; font-weight: bold; font-size: 1.2em; cursor: pointer; }
+        .sap-data { font-size: 0.85em; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
 
-        .main { flex: 1; padding: 30px; overflow-y: auto; }
-        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 10px solid var(--purple); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* ÁREA PRINCIPAL */
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .content { padding: 25px; overflow-y: auto; }
+
+        /* COMPONENTES DE ANÁLISE */
+        .chart-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 25px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 120px; }
+        .bar { flex: 1; background: var(--purple); border-radius: 4px 4px 0 0; min-width: 35px; }
+
+        .alert-master { background: var(--red); color: white; padding: 25px; border-radius: 12px; text-align: center; }
+        .btn-sap { background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
+
     <aside class="sidebar">
         <div class="user-box">
-            <small>SVP OPERACIONAL V4.0</small>
-            <h2 style="margin: 5px 0;">OP_01</h2>
-            <span style="color: var(--gold); font-size: 0.8em; font-weight: bold;">OPERADOR</span>
+            <small>SVP V4.0 - PALMAS</small>
+            <h3 style="margin: 5px 0;">JORGE_ZENSQUE</h3>
+            <span style="color: var(--gold); font-size: 0.8em; font-weight: bold;">GESTÃO MASTER</span>
         </div>
 
-        <button class="btn-stop">STOP</button>
+        <button class="btn-stop" onclick="killSwitch()">STOP GERAL</button>
 
-        <div class="sap-box">
-            <b style="color:var(--gold);">📦 ESTOQUE (VALORES SAP)</b>
-            <div class="sap-row"><span>Óculos:</span> <b>500</b></div>
-            <div class="sap-row"><span>Cozinha:</span> <b>300</b></div>
-            <div class="sap-row" style="color:var(--gold)"><span>Eletrônicos:</span> <b>200</b></div>
+        <div class="team-box">
+            <b style="font-size: 0.8em; color: var(--gold);">👥 STATUS DA EQUIPE (20)</b>
+            <div class="ops-grid" id="team">
+                </div>
+            <div style="font-size: 0.65em; margin-top: 10px; color: #ccc;">● 16 Operando | ● 4 Offline</div>
         </div>
 
-        <div class="calc">
-            <div class="screen">0</div>
-            <div class="grid">
-                <button class="b-calc">7</button><button class="b-calc">8</button><button class="b-calc">9</button>
-                <button class="b-calc">4</button><button class="b-calc">5</button><button class="b-calc">6</button>
-                <button class="b-calc">1</button><button class="b-calc">2</button><button class="b-calc">3</button>
-                <button class="b-calc" style="background:var(--red)">C</button>
-                <button class="b-calc">0</button>
-                <button class="b-calc" style="background:var(--green)">OK</button>
-            </div>
+        <div class="sap-data">
+            <b style="color: var(--gold);">📦 RESUMO SAP</b><br>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;"><span>Eletrônicos:</span> <b>200</b></div>
+            <div style="display:flex; justify-content:space-between;"><span>Óculos:</span> <b>500</b></div>
         </div>
     </aside>
 
     <main class="main">
-        <h1 style="color: var(--green);">● EM OPERAÇÃO</h1>
-        <div style="font-size: 5em; font-weight: bold; color: #9b59b6;">0</div>
-        <hr>
-        <h3>📋 FILA DE PRODUÇÃO ATIVA</h3>
-        <div class="card">
-            <div><b>LOTE: Eletrônicos</b><br><small>Aguardando Baixa SAP</small></div>
-            <b style="color: #888;">AGUARDANDO</b>
+        <header class="header">
+            <div id="status" style="color: var(--green); font-weight: bold; font-size: 1.2em;">● UNIDADE PALMAS EM OPERAÇÃO</div>
+            <div style="text-align: right;">
+                <span id="total" style="font-size: 2.5em; font-weight: bold; color: var(--purple);">142</span><br>
+                <small style="font-weight:bold; color:#888;">PRODUÇÃO DO TURNO</small>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="chart-card">
+                <b style="color: #555;">📈 EVOLUÇÃO DE PRODUÇÃO (ÚLTIMOS 30 MIN)</b>
+                <div class="bar-chart">
+                    <div class="bar" style="height: 30%;"></div>
+                    <div class="bar" style="height: 60%;"></div>
+                    <div class="bar" style="height: 45%;"></div>
+                    <div class="bar" style="height: 90%;"></div>
+                    <div class="bar" style="height: 50%;"></div>
+                    <div class="bar" style="height: 75%;"></div>
+                </div>
+            </div>
+
+            <div class="alert-master">
+                <h2 style="margin:0">⚠️ TRANSBORDAMENTO (3 DIAS)</h2>
+                <p>Acúmulo crítico no lote de **Eletrônicos**. Bloqueio de disparo disponível.</p>
+                <button class="btn-sap" onclick="lockSap()">⛔ BLOQUEAR DISPARO NO SAP</button>
+            </div>
         </div>
     </main>
+
+    <script>
+        // Criar os 20 slots de operadores
+        const grid = document.getElementById('team');
+        for(let i=1; i<=20; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'op-dot' + (i > 16 ? ' op-off' : '');
+            dot.innerText = i < 10 ? '0'+i : i;
+            grid.appendChild(dot);
+        }
+
+        function killSwitch() {
+            const s = document.getElementById('status');
+            s.innerText = "🛑 PRODUÇÃO INTERROMPIDA POR JORGE";
+            s.style.color = "red";
+        }
+
+        function lockSap() {
+            alert("Sinal de bloqueio enviado ao servidor SAP com sucesso.");
+        }
+    </script>
 </body>
 </html>
