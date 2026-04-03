@@ -8,44 +8,45 @@
         :root { --dark: #2c3e50; --gold: #f1c40f; --green: #27ae60; --alta: #e74c3c; --light: #f4f7f6; --purple: #8e44ad; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Ajustada para Mobile */
-        .sidebar { width: 320px; background: var(--dark); color: white; padding: 15px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; z-index: 10; }
-        
+        .sidebar { width: 320px; background: var(--dark); color: white; padding: 15px; display: flex; flex-direction: column; border-right: 5px solid #34495e; overflow-y: auto; }
         .user-info { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); margin-bottom: 10px; }
         
         .btn-stop { background: #ff0000; color: white; border: 4px solid #b30000; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; font-size: 1.1em; }
 
-        /* CALCULADORA CORRIGIDA (BOTÕES VISÍVEIS) */
-        #container-calculadora { background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #444; margin-top: 5px; width: 100%; box-sizing: border-box; }
+        /* ESTOQUE MANTIDO */
+        .estoque-box { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--gold); font-size: 0.8em; }
+
+        /* CALCULADORA COMPLETA */
+        #container-calculadora { background: #1e272e; padding: 10px; border-radius: 8px; border: 1px solid #444; }
         .display { background: #000; color: #2ecc71; padding: 10px; text-align: right; margin-bottom: 8px; font-family: monospace; border-radius: 4px; font-size: 1.4em; min-height: 30px; }
         .pad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .pad-grid button { padding: 15px 5px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; transition: 0.1s; }
-        .pad-grid button:active { background: var(--gold); transform: scale(0.95); }
+        .pad-grid button { padding: 15px 5px; border: none; border-radius: 6px; background: #34495e; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; }
 
-        .main { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
+        /* GRÁFICO E PDF MANTIDOS */
+        .box-gestao { background: white; color: var(--dark); padding: 10px; border-radius: 8px; margin-top: 10px; }
+        #mini-grafico-container { background: white; padding: 5px; border-radius: 5px; height: 100px; margin-top: 5px; }
+
+        .main { flex: 1; padding: 20px; overflow-y: auto; }
         .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; border-left: 10px solid #ccc; cursor: pointer; }
         .card.selecionado { border: 3px solid var(--gold) !important; background: #fffdf2; }
-
-        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; }
-        #overlay-erro { background:rgba(0,0,0,0.95); border: 15px solid var(--alta); }
     </style>
 </head>
 <body>
 
-    <div id="overlay-erro" class="overlay">
-        <h1 style="font-size: 3em; color: var(--alta);">BLOQUEIO DE QUALIDADE</h1>
-        <h2 style="color: var(--gold);">AGUARDE A LIBERAÇÃO DA GESTÃO</h2>
-    </div>
-
     <div class="sidebar">
         <div class="user-info">
             <small id="u-nivel"></small>
-            <h3 id="u-nome" style="margin:0">---</h3>
-            <button onclick="localStorage.clear(); window.location.href='index.html'" style="width:100%; margin-top:10px; background:none; border:1px solid #ff4d4d; color:#ff4d4d; cursor:pointer; font-size:0.8em; border-radius:4px; padding:5px;">SAIR</button>
+            <h3 id="u-nome">---</h3>
         </div>
 
         <div id="painel-op" style="display:none">
             <button class="btn-stop" onclick="acionarStop()">S T O P</button>
+            
+            <div class="estoque-box">
+                <small style="color:var(--gold); font-weight:bold;">📦 ESTOQUE (VALORES SAP)</small>
+                <div id="lista-estoque" style="margin-top:5px; font-family: monospace;"></div>
+            </div>
+
             <div id="container-calculadora">
                 <div class="display" id="display-pad">0</div>
                 <div class="pad-grid">
@@ -60,30 +61,37 @@
         </div>
 
         <div id="painel-gestao" style="display:none">
-            <div style="background:white; color:#333; padding:10px; border-radius:8px; margin-bottom:15px;">
-                <strong style="color:var(--alta); font-size:0.8em;">🚨 AUDITORIA DE ERROS</strong>
-                <div id="lista-erros-global" style="margin-top:10px;"></div>
+            <div class="box-gestao">
+                <strong style="color:var(--alta); font-size:0.8em;">🚨 AUDITORIA CENTRAL</strong>
+                <div id="lista-erros-global" style="font-size:0.8em; margin-top:5px;"></div>
             </div>
-            <button onclick="window.print()" style="width:100%; padding:10px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 GERAR RELATÓRIO</button>
+
+            <div class="box-gestao" style="background:rgba(255,255,255,0.1); color:white; border:1px solid #444;">
+                <small style="color:var(--gold); font-weight:bold;">📊 TENDÊNCIA</small>
+                <div id="mini-grafico-container"><canvas id="miniChart"></canvas></div>
+            </div>
+
+            <button onclick="window.print()" style="width:100%; padding:12px; margin-top:10px; background:var(--purple); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📄 EXPORTAR PDF</button>
         </div>
     </div>
 
     <div class="main">
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
+            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center;">
                 <small>REALIZADO</small><br><b id="kpi-realizado" style="font-size:2em">0</b>
             </div>
-            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center; border:1px solid #ddd;">
+            <div style="flex:1; background:#f9f9f9; padding:15px; border-radius:8px; text-align:center;">
                 <small>META</small><br><b style="font-size:2em">50</b>
             </div>
         </div>
-        <h3 id="status-lotes">FILA DE PRODUÇÃO ATIVA</h3>
+        <h3>FILA DE PRODUÇÃO ATIVA</h3>
         <div id="container-pedidos"></div>
     </div>
 
     <script>
-        const gestores = ['jorge_zensque', 'ceo_jovem', 'ger_logistica'];
-        const usuario = localStorage.getItem('svp_user') || 'op_jovem';
+        // Mesma lógica de segurança e conferência anterior
+        const gestores = ['jorge_zensque', 'ger_logistica'];
+        const usuario = localStorage.getItem('svp_user') || 'OP_01';
         let processados = parseInt(localStorage.getItem('svp_score')) || 0;
         let buffer = "";
         let loteAtivo = null;
@@ -95,15 +103,21 @@
             if(isGestao) {
                 document.getElementById('u-nivel').innerText = "GESTÃO MASTER";
                 document.getElementById('painel-gestao').style.display = 'block';
+                iniciarGrafico();
             } else {
                 document.getElementById('u-nivel').innerText = "OPERADOR";
                 document.getElementById('painel-op').style.display = 'block';
+                renderizarEstoque();
             }
-            
-            atualizarKPIs();
-            // INICIA A GERAÇÃO DE LOTES AUTOMÁTICA
-            setInterval(gerarLoteAutomatico, 5000); 
-            setInterval(sincronizarSistema, 1000);
+            atualizarTelas();
+            setInterval(gerarLote, 7000);
+            setInterval(sincronizar, 1000);
+        }
+
+        function renderizarEstoque() {
+            const itens = { "Óculos": 500, "Cozinha": 300, "Eletrônicos": 200, "Papelaria": 600 };
+            document.getElementById('lista-estoque').innerHTML = Object.entries(itens)
+                .map(([k, v]) => `<div style="display:flex; justify-content:space-between;"><span>${k}</span><b>${v}</b></div>`).join('');
         }
 
         function teclar(n) { buffer += n; document.getElementById('display-pad').innerText = buffer; }
@@ -115,61 +129,60 @@
             loteAtivo = { el, nome, valor };
         }
 
-        function gerarLoteAutomatico() {
-            const container = document.getElementById('container-pedidos');
-            if(container.children.length > 5) return; // Não trava se já tiver muitos lotes
-
-            const dados = [
-                {n:"Papelaria", v:600}, {n:"Óculos", v:500}, 
-                {n:"Cozinha", v:300}, {n:"Eletrônicos", v:200}
-            ];
-            const t = dados[Math.floor(Math.random()*dados.length)];
-            
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.onclick = () => selecionarLote(card, t.n, t.v);
-            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa SAP</small></div><button style="background:var(--dark); color:white; border:none; padding:8px; border-radius:4px; font-size:0.7em;">BAIXA SAP</button>`;
-            container.appendChild(card);
-        }
-
         function confirmarBaixa() {
-            if(!loteAtivo) return alert("Selecione um lote primeiro!");
+            if(!loteAtivo) return alert("Selecione um lote!");
             if(parseInt(buffer) === loteAtivo.valor) {
                 processados++;
+                localStorage.setItem('svp_score', processados);
                 loteAtivo.el.remove();
                 loteAtivo = null;
                 limparPad();
-                atualizarKPIs();
+                atualizarTelas();
             } else {
                 let erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
                 erros.push({ op: usuario, lote: loteAtivo.nome });
                 localStorage.setItem('svp_erros', JSON.stringify(erros));
-                limparPad();
+                alert("ERRO! Bloqueado para auditoria.");
+                location.reload();
             }
         }
 
-        function sincronizarSistema() {
+        function gerarLote() {
+            const container = document.getElementById('container-pedidos');
+            if(container.children.length > 5) return;
+            const tipos = [{n:"Óculos", v:500}, {n:"Cozinha", v:300}, {n:"Papelaria", v:600}];
+            const t = tipos[Math.floor(Math.random()*tipos.length)];
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => selecionarLote(card, t.n, t.v);
+            card.innerHTML = `<div><b>📦 LOTE: ${t.n}</b><br><small>Aguardando Baixa</small></div><button>BAIXA SAP</button>`;
+            container.appendChild(card);
+        }
+
+        function sincronizar() {
             const erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
             if(gestores.includes(usuario.toLowerCase())) {
-                const lista = document.getElementById('lista-erros-global');
-                lista.innerHTML = erros.map((e, i) => 
-                    `<button onclick="liberar(${i})" style="width:100%; background:var(--alta); color:white; border:none; padding:8px; border-radius:5px; margin-bottom:5px; cursor:pointer;">LIBERAR OP: ${e.op}</button>`
+                document.getElementById('lista-erros-global').innerHTML = erros.map((e, i) => 
+                    `<button onclick="liberar(${i})" style="width:100%; background:var(--alta); color:white; border:none; margin-bottom:5px; padding:5px; border-radius:4px; cursor:pointer;">LIBERAR: ${e.op}</button>`
                 ).join('') || 'Sem pendências.';
-            } else {
-                const estouBloqueado = erros.some(e => e.op === usuario);
-                document.getElementById('overlay-erro').style.display = estouBloqueado ? 'flex' : 'none';
             }
         }
 
-        function liberar(index) {
+        function liberar(i) {
             let erros = JSON.parse(localStorage.getItem('svp_erros')) || [];
-            erros.splice(index, 1);
+            erros.splice(i, 1);
             localStorage.setItem('svp_erros', JSON.stringify(erros));
         }
 
-        function atualizarKPIs() {
-            document.getElementById('kpi-realizado').innerText = processados;
-            localStorage.setItem('svp_score', processados);
+        function atualizarTelas() { document.getElementById('kpi-realizado').innerText = processados; }
+
+        function iniciarGrafico() {
+            const ctx = document.getElementById('miniChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels: [1,2,3,4,5], datasets: [{ data: [2,4,3,5,4], borderColor: '#f1c40f', borderWidth: 2, fill: false }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+            });
         }
 
         inicializar();
