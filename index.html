@@ -4,41 +4,98 @@
     <meta charset="UTF-8">
     <title>SVP 4.0 - Operacional Palmas</title>
     <style>
-        body { font-family: sans-serif; background: #ecf0f1; text-align: center; padding: 20px; }
-        .lote-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; display: none; }
-        .wait-msg { color: #7f8c8d; margin-top: 50px; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #bdc3c7; border-radius: 5px; }
-        button { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        :root { --dark: #1a252f; --gold: #f1c40f; --blue: #2980b9; --green: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* BARRA DE PROGRESSO */
+        .progress-container { background: #eee; border-radius: 10px; height: 25px; margin: 15px 0; overflow: hidden; }
+        .progress-bar { background: var(--blue); height: 100%; transition: 0.5s; width: 0%; }
+        
+        .estoque-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .info-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid var(--blue); }
+        input { width: 90%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 6px; }
+        button { width: 100%; background: var(--green); color: white; border: none; padding: 18px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
     </style>
 </head>
 <body>
-    <h1>SVP 4.0 - Painel do Jovem</h1>
-    
-    <div id="wait" class="wait-msg">
-        <h3>⏳ AGUARDANDO LIBERAÇÃO...</h3>
-        <p>O Gestor Master Jorge ainda não disparou os lotes no SAP.</p>
-    </div>
+    <div class="container">
+        <h2 style="text-align: center;">📊 CONTROLE DE PRODUÇÃO - PALMAS</h2>
 
-    <div id="area-producao" class="lote-card">
-        <h2 style="color: #2980b9;">LOTE: ELETRÔNICOS</h2>
-        <p>Referência: 2026-E1</p>
-        <hr>
-        <input type="number" id="qtd" placeholder="Quantidade Processada">
-        <button onclick="alert('Lançamento realizado com sucesso!')">FINALIZAR LANÇAMENTO</button>
+        <div id="wait" class="card" style="text-align: center;">
+            <h3>⏳ AGUARDANDO LIBERAÇÃO DO JORGE...</h3>
+        </div>
+
+        <div id="area-producao" class="card" style="display: none;">
+            <h3 style="color: var(--blue); margin-top: 0;">📦 LOTE ATUAL: <span id="nomeLote">---</span></h3>
+            
+            <div class="progress-container">
+                <div id="barra" class="progress-bar"></div>
+            </div>
+            <p id="textoProgresso" style="text-align: center; font-weight: bold;"></p>
+
+            <div class="estoque-grid">
+                <div class="info-box">
+                    <small>TOTAL DO LOTE</small><br>
+                    <b id="totalLote" style="font-size: 1.4em;">0</b>
+                </div>
+                <div class="info-box" style="border-color: var(--gold);">
+                    <small>FALTA PROCESSAR</small><br>
+                    <b id="falta" style="font-size: 1.4em; color: #e67e22;">0</b>
+                </div>
+            </div>
+
+            <hr>
+            <h4>LANÇAR CONFERÊNCIA:</h4>
+            <input type="number" id="inputQtd" placeholder="Quantidade que você conferiu agora">
+            <p><button onclick="darBaixa()">CONFIRMAR E DAR BAIXA</button></p>
+        </div>
     </div>
 
     <script>
+        // Dados vindos do Master (Jorge)
+        let estoqueTotal = 200; // Eletrônicos conforme seu SAP
+        let processado = 0;
+
         function checkMaster() {
             const status = localStorage.getItem('sap_status');
-            const area = document.getElementById('area-producao');
-            const wait = document.getElementById('wait');
-
+            const loteNome = localStorage.getItem('lote_ativo');
+            
             if (status === 'LIBERADO') {
-                area.style.display = 'block';
-                wait.style.display = 'none';
+                document.getElementById('area-producao').style.display = 'block';
+                document.getElementById('wait').style.display = 'none';
+                document.getElementById('nomeLote').innerText = loteNome;
+                atualizarTela();
             }
         }
-        // Verifica a cada 1 segundo se o Jorge liberou
+
+        function atualizarTela() {
+            const falta = estoqueTotal - processado;
+            const porcentagem = (processado / estoqueTotal) * 100;
+            
+            document.getElementById('totalLote').innerText = estoqueTotal;
+            document.getElementById('falta').innerText = falta;
+            document.getElementById('barra').style.width = porcentagem + "%";
+            document.getElementById('textoProgresso').innerText = `Progresso: ${Math.round(porcentagem)}% (${processado} de ${estoqueTotal})`;
+            
+            if(falta <= 0) {
+                document.getElementById('area-producao').innerHTML = "<h2>✅ LOTE CONCLUÍDO!</h2><p>Aguarde novo disparo do Gestor Master.</p>";
+            }
+        }
+
+        function darBaixa() {
+            const valor = parseInt(document.getElementById('inputQtd').value);
+            if(!valor || valor <= 0) return alert("Digite um valor válido!");
+            
+            processado += valor;
+            document.getElementById('inputQtd').value = "";
+            atualizarTela();
+            
+            // Aqui você poderia enviar para o seu banco de dados
+            alert("Baixa no estoque realizada com sucesso!");
+        }
+
         setInterval(checkMaster, 1000);
     </script>
 </body>
