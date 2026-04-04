@@ -2,84 +2,44 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SVP 4.0 - Unidade Palmas</title>
+    <title>SVP 4.0 - Operacional Palmas</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 340px; }
-        .logo-text { color: #2c3e50; font-weight: bold; margin-bottom: 25px; font-size: 1.3em; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #1f6391; }
-        #error { color: #e74c3c; font-size: 0.85em; display: none; margin-top: 15px; font-weight: bold; }
+        body { font-family: sans-serif; background: #ecf0f1; text-align: center; padding: 20px; }
+        .lote-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; display: none; }
+        .wait-msg { color: #7f8c8d; margin-top: 50px; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #bdc3c7; border-radius: 5px; }
+        button { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <div class="logo-text">PROJETO PESCAR - SVP 4.0<br>
-            <small style="color:#7f8c8d; font-size:0.7em">Unidade Palmas / TO</small>
-        </div>
-        
-        <input type="text" id="user" placeholder="Usuário">
-        <input type="password" id="pass" placeholder="Senha">
-        
-        <button onclick="login()">AUTENTICAR NO SAP</button>
-        
-        <p id="error">❌ Usuário ou senha incorretos.</p>
+    <h1>SVP 4.0 - Painel do Jovem</h1>
+    
+    <div id="wait" class="wait-msg">
+        <h3>⏳ AGUARDANDO LIBERAÇÃO...</h3>
+        <p>O Gestor Master Jorge ainda não disparou os lotes no SAP.</p>
+    </div>
+
+    <div id="area-producao" class="lote-card">
+        <h2 style="color: #2980b9;">LOTE: ELETRÔNICOS</h2>
+        <p>Referência: 2026-E1</p>
+        <hr>
+        <input type="number" id="qtd" placeholder="Quantidade Processada">
+        <button onclick="alert('Lançamento realizado com sucesso!')">FINALIZAR LANÇAMENTO</button>
     </div>
 
     <script>
-        // Tabela de Acessos Sincronizada
-        const users = {
-            // OPERACIONAIS (pescar123)
-            'op_jovem': { p: 'pescar123', t: '1' },
-            'op_01': { p: 'pescar123', t: '1' }, 
-            'op_1': { p: 'pescar123', t: '1' },
-            'op_02': { p: 'pescar123', t: '1' }, 
-            'op_2': { p: 'pescar123', t: '1' },
-            'op_03': { p: 'pescar123', t: '1' },
-            'op_04': { p: 'pescar123', t: '1' },
-            'op_05': { p: 'pescar123', t: '1' },
-            'op_06': { p: 'pescar123', t: '2' },
-            'op_07': { p: 'pescar123', t: '2' },
+        function checkMaster() {
+            const status = localStorage.getItem('sap_status');
+            const area = document.getElementById('area-producao');
+            const wait = document.getElementById('wait');
 
-            // LÍDERES / GERENTES (gerente456 / lider789)
-            'ger_logistica': { p: 'gerente456', t: 'all' },
-            'lider_01': { p: 'lider789', t: '1' },
-            'lider_02': { p: 'lider789', t: '2' },
-
-            // DIRETORIA (direcao789)
-            'ceo_jovem': { p: 'direcao789', t: 'all' },
-
-            // CONSELHO / MASTER (master2026)
-            'jorge_zensque': { p: 'master2026', t: 'all' }
-        };
-
-        function login() {
-            const u = document.getElementById('user').value.toLowerCase().trim();
-            const p = document.getElementById('pass').value;
-            const errorMsg = document.getElementById('error');
-            
-            // Valida se o usuário existe e se a senha confere
-            if(users[u] && users[u].p === p) {
-                // Salva as informações de sessão
-                localStorage.setItem('svp_user', u.toUpperCase());
-                localStorage.setItem('svp_time', users[u].t);
-                
-                // Redireciona para a página de operação
-                window.location.href = 'operacao.html';
-            } else {
-                // Mostra erro e limpa a senha
-                errorMsg.style.display = 'block';
-                document.getElementById('pass').value = "";
+            if (status === 'LIBERADO') {
+                area.style.display = 'block';
+                wait.style.display = 'none';
             }
         }
-
-        // Permite dar 'Enter' para logar
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
+        // Verifica a cada 1 segundo se o Jorge liberou
+        setInterval(checkMaster, 1000);
     </script>
 </body>
 </html>
