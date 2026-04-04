@@ -6,32 +6,44 @@
     <style>
         :root { --dark: #1a252f; --gold: #f1c40f; --green: #2ecc71; --red: #e74c3c; --purple: #9b59b6; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f7f6; overflow: hidden; }
+
+        /* SIDEBAR DO JORGE */
         .sidebar { width: 320px; background: #2c3e50; color: white; display: flex; flex-direction: column; padding: 15px; border-right: 4px solid var(--dark); }
         .user-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); margin-bottom: 20px; }
+        
         .btn-master { width: 100%; padding: 20px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-bottom: 15px; }
         .btn-stop { background: var(--red); }
         .btn-on { background: var(--green); }
+
+        /* GRADE DOS OPERADORES */
         .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px; }
         .op-dot { height: 25px; border-radius: 3px; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 0.65em; font-weight: bold; color: white; }
+
         .main { flex: 1; display: flex; flex-direction: column; }
         .header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .alert-box { background: var(--red); color: white; padding: 30px; border-radius: 12px; text-align: center; margin: 20px; box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3); display: block; }
+        
+        /* ALERTA DE TRANSBORDAMENTO */
+        .alert-box { background: var(--red); color: white; padding: 30px; border-radius: 12px; text-align: center; margin: 20px; box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3); }
         .btn-sap { background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
+
     <aside class="sidebar">
         <div class="user-box">
             <small>SVP V4.0 - PALMAS</small>
             <h3 style="margin: 5px 0;">JORGE_ZENSQUE</h3>
             <span style="color: var(--gold); font-size: 0.8em; font-weight: bold;">GESTÃO MASTER</span>
         </div>
+
         <button id="masterAction" class="btn-master btn-stop" onclick="toggleProducao()">STOP GERAL</button>
+
         <div id="painelOps">
             <b style="font-size: 0.8em; color: var(--gold);">👥 EQUIPE (20 OPERADORES)</b>
             <div class="team-grid" id="team"></div>
             <small style="display:block; margin-top:10px; opacity:0.7">● 16 Operando | ● 4 Offline</small>
         </div>
+
         <div style="margin-top: auto; font-size: 0.85em; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
             <b style="color:var(--gold)">RESUMO SAP</b><br>
             Eletrônicos: <b>200</b> | Óculos: <b>500</b>
@@ -46,6 +58,7 @@
                 <small style="font-weight:bold; color:#888;">PRODUÇÃO DO TURNO</small>
             </div>
         </header>
+
         <div class="alert-box" id="transbordoAlert">
             <h2>⚠️ TRANSBORDAMENTO (3 DIAS)</h2>
             <p>Acúmulo crítico detectado. Apenas o Gestor Master pode autorizar o disparo.</p>
@@ -54,6 +67,7 @@
     </main>
 
     <script>
+        // Inicializa a grade
         const grid = document.getElementById('team');
         for(let i=1; i<=20; i++) {
             const dot = document.createElement('div');
@@ -63,13 +77,15 @@
             grid.appendChild(dot);
         }
 
+        // Função para disparar lotes para os jovens
         function liberarLotes() {
             document.getElementById('transbordoAlert').style.display = 'none';
             localStorage.setItem('sap_status', 'LIBERADO');
             localStorage.setItem('lote_ativo', 'Eletrônicos');
-            alert("COMANDO MESTRE ENVIADO: Lotes disparados!");
+            alert("Lotes disparados para a fila dos operadores!");
         }
 
+        // Função de interrupção geral
         function toggleProducao() {
             const btn = document.getElementById('masterAction');
             const txt = document.getElementById('statusText');
